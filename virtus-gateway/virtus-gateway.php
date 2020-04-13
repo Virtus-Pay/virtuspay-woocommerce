@@ -220,8 +220,12 @@ function virtusPaymentGateInit(): void {
     }
 
     public function virtusCallback() {
-        //Pegando a transação por parâmetro GET
-        $transaction = $_GET['transaction'];
+        // debug($_POST, true);
+        extract($_POST);
+
+        $virtusProposal = new Fetch($this->authToken);
+        $virtusProposal->get(VIRTUSENV."/v1/order/{$transaction}");
+        $proposal = $virtusProposal->response();
 
         //Configurando cURL
         $ch = curl_init();
