@@ -8,7 +8,9 @@ Author: VirtusPay Dev Team
 Author URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
 */
 require_once __DIR__.'/settings.php';
-require_once __DIR__.'/cpf.class.php';
+require_once __DIR__.'/cpf.function.php';
+require_once __DIR__.'/fetch.class.php';
+require_once __DIR__.'/cep.class.php';
 
 add_action('plugins_loaded', 'virtusPaymentGateInit', 0);
 function virtusPaymentGateInit(): void {
@@ -60,6 +62,7 @@ function virtusPaymentGateInit(): void {
     // defaults
     public $enabled = 'no';
     private $return_url = '';
+    private $testmode = 'no';
     private $isTestMode = false;
     private $authTestToken;
     private $authProdToken;
@@ -78,24 +81,12 @@ function virtusPaymentGateInit(): void {
 
       $this->enabled = $this->get_option('enabled');
       $this->return_url = (strlen($this->get_option('return_url')) > 0)? $this->get_option('return_url') : wc_get_checkout_url();
-      $this->isTestMode = 'yes' === $this->get_option('testmode');
+      $this->testmode = $this->get_option('testmode');
+      $this->isTestMode = 'yes' === $this->testmode;
 
       $this->authTestToken = $this->get_option('test_auth_token');
       $this->authProdToken = $this->get_option('auth_token');
-      $this->auth_token = $this->isTestMode ? $this->authTestToken : $this->authProdToken;
-
-      print_r('<pre>'.print_r([
-        'enabled' => $this->enabled,
-        'return_url' => $this->return_url,
-        'isTestMode' => $this->isTestMode,
-        'authTestToken' => $this->authTestToken,
-        'authProdToken' => $this->authProdToken,
-        'enabled_option' => $this->get_option('enabled'),
-        'return_url_option' => $this->get_option('return_url'),
-        'isTestMode_option' => $this->get_option('testmode'),
-        'authTestToken_option' => $this->get_option('test_auth_token'),
-        'authProdToken_option' => $this->get_option('auth_token'),
-      ], true).'</pre>');
+      $this->authToken = $this->isTestMode ? $this->authTestToken : $this->authProdToken;
 
       add_action(
         'woocommerce_update_options_payment_gateways_'.$this->id,
@@ -111,21 +102,16 @@ function virtusPaymentGateInit(): void {
         "woocommerce_api_{$this->id}",
         [$this, 'virtusCallback']
       );
+
+      // add_action(
+      //   "woocommerce_api_{$this->id}_installments",
+      //   [$this, 'virtusGetInstallments']
+      // );
     }
 
-    public function process_admin_options(): bool {
-      // if(isset($_POST) && !empty($_POST)) {
-        // die(print_r($_POST, true));
-        // extract($_POST);
-
-        // if(empty($xpto)) {
-        //   WC_Admin_Settings::add_error( 'Error: Please fill required fields' );
-        //   return false;
-        // }
-      // }
-
-      return true;
-    }
+    // public function virtusGetInstallments(): string {
+    //   return;
+    // }
 
     public function init_form_fields(): void {
       $this->form_fields = [
@@ -134,7 +120,9 @@ function virtusPaymentGateInit(): void {
           'label' => 'Ativar '.TITLE.'?',
           'type'  => 'checkbox',
           'description' => 'A ativação ou desativação de pagamentos influenciará na tomada de decisão do seu comprador.',
-          'default' => 'no',
+          'default' => $this->enabled,
+          'name' => 'enabled',
+          'id' => 'enabled',
           'desc_tip' => true
         ],
         'testmode' => [
@@ -142,7 +130,9 @@ function virtusPaymentGateInit(): void {
           'label' => 'Ativar '.TITLE.' em modo de testes?',
           'type' => 'checkbox',
           'description' => 'Ativar o modo de testes permite que você possa homologar os seus pagamentos fora do seu ambiente de produção.',
-          'default' => $this->isTestMode ? $this->isTestMode : 'yes',
+          'default' => $this->testmode,
+          'name' => 'testmode',
+          'id' => 'testmode',
           'desc_tip' => true
         ],
         'return_url' => [
@@ -151,6 +141,8 @@ function virtusPaymentGateInit(): void {
           'description' => 'URL para qual devemos redirecionar o usuário após a validação do seu pagamento.',
           'required' =>  true,
           'default' => $this->return_url,
+          'name' => 'return_url',
+          'id' => 'return_url',
           'desc_tip' => true
         ],
         'test_auth_token' => [
@@ -159,6 +151,8 @@ function virtusPaymentGateInit(): void {
           'type' => 'text',
           'required' =>  true,
           'default' => $this->authTestToken,
+          'name' => 'test_auth_token',
+          'id' => 'test_auth_token',
           'desc_tip' => true
         ],
         'auth_token' => [
@@ -166,6 +160,8 @@ function virtusPaymentGateInit(): void {
           'description' => 'Autenticação de acesso para a API de dados em ambiente de produção / publicação.',
           'type' => 'text',
           'default' => $this->authProdToken,
+          'name' => 'auth_token',
+          'id' => 'auth_token',
           'desc_tip' => true
         ]
       ];
@@ -188,7 +184,7 @@ function virtusPaymentGateInit(): void {
             <label class="" for="cpf">
               CPF <span class="required">*</span>
             </label>
-            <input id="virtusCPF" name="cpf" type="text" autocomplete="off" class="input-text cpf">
+            <input id="billing_cpf" name="billing_cpf" type="text" autocomplete="off" class="input-text cpf">
           </div>
         </div>
       FORM;
@@ -196,7 +192,7 @@ function virtusPaymentGateInit(): void {
       echo $response;
     }
 
-    public function payment_scripts() {
+    public function payment_scripts(): void {
       wp_enqueue_style($this->id, PLUGINURL.'/virtus.css');
       wp_enqueue_script('virtusMasked', PLUGINURL.'/jquery-mask-plugin/dist/jquery.mask.min.js');
 
@@ -211,11 +207,16 @@ function virtusPaymentGateInit(): void {
       wp_enqueue_script('virtusGateway');
     }
 
-    /*
-      * Fields validation, more in Step 5
-      */
-    public function validate_fields() {
-      return;
+    public function validate_fields(): bool {
+      $cpf = validaCPF($_POST['billing_cpf']);
+      if(!strlen($cpf)) {
+        wc_add_notice('O CPF é importante para emissão da proposta.', 'error');
+        wc_add_notice('Verifique o CPF informado e tente novamente.', 'error');
+
+        return false;
+      }
+
+      return true;
     }
 
     public function virtusCallback() {
@@ -226,10 +227,10 @@ function virtusPaymentGateInit(): void {
         $ch = curl_init();
         curl_setopt($ch,CURLOPT_HTTPHEADER,[
           'Content-Type: application/json',
-          'Authorization: Token '.$this->auth_token
+          'Authorization: Token '.$this->authToken
         ]);
 
-        curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_URL,"$env/v1/order/$transaction");
         $response = curl_exec($ch);
         curl_close($ch);
@@ -248,112 +249,119 @@ function virtusPaymentGateInit(): void {
         update_option('webhook_debug', $_GET);
     }
 
+    private function getProductCategoriesByIDs(array $data): string {
+      $categories = [];
+
+      foreach($data as $id) {
+        $term = get_term_by('id', $id, 'product_cat');
+        if($term) array_push($categories, $term->name);
+      }
+
+      return implode(', ', $categories);
+    }
 
     public function process_payment($order_id) {
-      //Quebra os produtos do pedido em 'nome' e 'quantidade', criando a string de descrição
-      foreach ( WC()->cart->get_cart() as $cart_item ) {
-        $description = $cart_item['quantity']."x ".$cart_item['data']->get_title().';';
+      $cartItems = WC()->cart->get_cart();
+      $description = [];
+      $items = [];
+
+      foreach($cartItems as $item) {
+        array_push($description, $item['quantity']."x".$item['data']->get_title());
+        array_push($items, [
+          "product" => $item['data']->get_name(),
+          "price" => $item['data']->get_price(),
+          "detail" => $item['data']->get_sku(),
+          "quantity" => $item['quantity'],
+          "category" => $this->getProductCategoriesByIDs($item['data']->get_category_ids())
+        ]);
       }
 
       $order = wc_get_order($order_id);
-die('<pre>'.print_r($order, true).'</pre>');
-      //Separando os dados em variáveis para montar o JSON a ser enviado na requisição
       $amount = $order->get_total();
       $costumerId = $order->get_user_id();
       $orderId = $order->get_order_number();
-      $cpf = !isset($_POST['billing_cpf']) ? $_POST['billing_wooccm8'] : $_POST['billing_cpf'] ;
+      $cpf = isset($_POST['billing_cpf']) ? $_POST['billing_cpf'] : $_POST['billing_wooccm8'];
 
       $billing_address = [
-        'city' => $order->get_billing_city(),
-        'neighborhood' => isset($_POST['billing_neighborhood']) ? $_POST['billing_neighborhood'] : $_POST['billing_wooccm12'],
         'street' => isset($_POST['billing_address_1'])? $_POST['billing_address_1'] : $_POST['billing_wooccm11'],
         'number' => isset($_POST['billing_number']) ? $_POST['billing_number'] : $_POST['billing_wooccm9'],
         'complement' => isset($_POST['billing_address_2']) ? $_POST['billing_address_2'] : $_POST['billing_wooccm10'],
+        'neighborhood' => isset($_POST['billing_neighborhood']) ? $_POST['billing_neighborhood'] : $_POST['billing_wooccm12'],
+        'city' => $order->get_billing_city(),
         'state' => $order->get_billing_state(),
         'cep' => $order->get_billing_postcode()
       ];
 
+      $billingCep = new Cep();
+      $billingCep->query($billing_address['cep']);
+      $billingCepData = $billingCep->response();
+
+      $billing_address['neighborhood'] = $billingCepData->bairro;
+      $billing_address['city'] = $billingCepData->localidade;
+      $billing_address['state'] = $billingCepData->uf;
+
       $shipping_address = [
-        'city' => $order->get_shipping_city(),
-        'neighborhood' => isset($_POST['shipping_neighborhood']) ? $_POST['shipping_neighborhood'] : $_POST['shipping_wooccm10'],
         'street' => isset($_POST['shipping_address_1']) ? $_POST['shipping_address_1'] : $_POST['billing_wooccm11'],
         'number' => isset($_POST['shipping_number']) ? $_POST['shipping_number'] : $_POST['shipping_wooccm9'],
         'complement' => isset($_POST['shipping_address_2']) ? $_POST['shipping_address_2'] : $_POST['shipping_wooccm8'],
+        'neighborhood' => isset($_POST['shipping_neighborhood']) ? $_POST['shipping_neighborhood'] : $_POST['shipping_wooccm10'],
+        'city' => $order->get_shipping_city(),
         'state' => $order->get_shipping_state(),
         'cep' => $order->get_shipping_postcode()
       ];
 
+      if(empty($shipping_address['cep'])) $shipping_address = $billing_address;
+      else {
+        $shippingCep = new Cep();
+        $shippingCep->query($shipping_address['cep']);
+        $shippingCepData = $shippingCep->response();
+
+        $shipping_address['neighborhood'] = $shippingCepData->bairro;
+        $shipping_address['city'] = $shippingCepData->localidade;
+        $shipping_address['state'] = $shippingCepData->uf;
+      }
+
       //Define a URL de callback com base na url sendo acessada atualmente
       //ToDo:: Checar necessidade de mudança
-      $callback = "?wc-api={$this->id}";
+      $callback = home_url("/wc-api/{$this->id}");
 
       $costumerName = $order->get_billing_first_name()." ".$order->get_billing_last_name();
       $costumerEmail = $order->get_billing_email();
       $costumerPhone = isset($_POST['billing_phone']) ? $_POST['billing_phone'] : $_POST['billing_wooccm13'];
 
-      $ch = curl_init();
+      $customer = [
+        "full_name" => $costumerName,
+        "cpf" => $cpf,
+        "income"=> $amount,
+        "cellphone" => $costumerPhone,
+        "email" => $costumerEmail,
+        "birthdate" => isset($_POST['birthdate']) ? $_POST['birthdate'] : null,
+        "customer_address" => $billing_address
+      ];
 
       //Montando array com os dados da requisição
       $data = [
-        "order_ref" => "$orderId",
-        "customer" => [
-          "full_name" => $costumerName,
-          "cpf" => $cpf,
-          "income"=>"1000.00",
-          "cellphone" => $costumerPhone,
-          "email" => $costumerEmail,
-          "birthdate" => '1900-01-01',
-          "customer_address" => [
-            "state" => $billing_address['state'],
-            "city" => $billing_address['city'],
-            "neighborhood" => $billing_address['neighborhood'],
-            "street" => $billing_address['street'],
-            "number" => $billing_address['number'],
-            "cep" => $billing_address['cep']
-          ]
-        ],
-        "delivery_address" => [
-          "state" => $shipping_address['state'],
-          "city" => $shipping_address['city'],
-          "neighborhood" => $shipping_address['neighborhood'],
-          "street" => $shipping_address['street'],
-          "number" => $shipping_address['number'],
-          "cep" => $shipping_address['cep'],
-          "complement" => $shipping_address['complement']
-        ],
+        "order_ref" => $orderId,
+        "customer" => $customer,
+        "delivery_address" => $shipping_address,
         "total_amount" => $amount,
         "installment" => 3,
-        "description" => $description,
+        "description" => implode('; ', $description),
         "callback" => $callback,
         "return_url" => $this->return_url,
-        "channel" => "woocommerce"
+        "channel" => "woocommerce",
+        "items" => $items
       ];
 
-      //Convertendo array para json
-      $json = json_encode($data);
-
-      //Configurando as options do cURL para a requisição
-      curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        "Authorization: Token {$this->auth_token}"
-      ]);
-      curl_setopt($ch, CURLOPT_URL, VIRTUSENV."/v1/order");
-      curl_setopt($ch, CURLOPT_POST, count($data));
-      curl_setopt($ch, CURLOPT_POSTFIELDS,$json);
-      curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
-
-      //Executando requisição e fechando o cURL
-      $response = curl_exec($ch);
-      curl_close($ch);
-
-      //Pegando a resposta e separando a transação
-      $transaction = json_decode($response,true);
-      $transaction = $transaction['transaction'];
+      $proposal = new Fetch($this->authToken);
+      $proposal->post(VIRTUSENV.'/v1/order', $data);
+      $proposalResponse = $proposal->response();
+      die('<pre>'.print_r($proposalResponse, true).'</pre>');
 
       //Adicionando notas para exibição no painel da order
       $order->add_order_note('Pedido enviado para checkout VirtusPay.', true);
 
-      $txLink = VIRTUSENV.'/salesman/order/'.$transaction;
+      $txLink = VIRTUSENV.'/salesman/order/'.$proposalResponse->transaction;
       $order->add_order_note(
         'Proposta disponível para consulta em: <a target="_blank" href='.$txLink.'>'.$txLink.'</a>',
         false
@@ -365,7 +373,7 @@ die('<pre>'.print_r($order, true).'</pre>');
       //Redirect para nosso checkout
       return [
         'result' => 'success',
-        'redirect' => "$env/taker/order/$transaction/accept"
+        'redirect' => VIRTUSENV."/taker/order/{$proposalResponse->transaction}/accept"
       ];
     }
   }
