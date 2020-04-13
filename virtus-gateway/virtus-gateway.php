@@ -360,7 +360,7 @@ function virtusPaymentGateInit(): void {
       //Redirect para nosso checkout
       return [
         'result' => 'success',
-        'redirect' => VIRTUSENV.str_replace('/api', '', "/taker/order/{$proposal->transaction}/accept")
+        'redirect' => str_replace('/api', '', VIRTUSENV)."/taker/order/{$proposal->transaction}/accept"
       ];
     }
   }
