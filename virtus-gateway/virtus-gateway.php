@@ -227,29 +227,17 @@ function virtusPaymentGateInit(): void {
         $virtusProposal->get(VIRTUSENV."/v1/order/{$transaction}");
         $proposal = $virtusProposal->response();
 
-        //Configurando cURL
-        $ch = curl_init();
-        curl_setopt($ch,CURLOPT_HTTPHEADER,[
-          'Content-Type: application/json',
-          'Authorization: Token '.$this->authToken
-        ]);
+        if(isset($proposal->detail)) throw new \Exception($proposal->detail, true);
+        if(is_array($proposal) && isset($proposal[0]['status']) && $proposal[0]['status'] !== "E") {
+          throw new \Exception($proposal, true);
+        }
 
-        curl_setopt($ch,CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_URL,"$env/v1/order/$transaction");
-        $response = curl_exec($ch);
-        curl_close($ch);
-        //Pegando resposta da requisição
-        $orderData = json_decode($response, true);
-        //Separando status da resposta
-        $status = $orderData[0]['status'];
+        $orderId = $proposal[0]['order_ref'];
 
-        //Se o status da transação for 'E', atualizo o status do pagamento do pedido para completo e adiciono uma nota visível para o usuário
-        if($status !== "E") return print_r($response);
-
-        $orderId = $orderData[0]['order_ref'];
         $order = wc_get_order($orderId);
         $order->add_order_note('Parcela de entrada paga.', true);
         $order->payment_complete();
+
         update_option('webhook_debug', $_GET);
     }
 
