@@ -282,9 +282,15 @@ function virtusPaymentGateInit(): void {
       $orderId = $order->get_order_number();
       $cpf = isset($_POST['billing_cpf']) ? $_POST['billing_cpf'] : $_POST['billing_wooccm8'];
 
+      $mainAddress = isset($_POST['billing_address_1'])? $_POST['billing_address_1'] : $_POST['billing_wooccm11'];
+
+      preg_match_all('/([^,])([0-9a-zA-Z\-\ \/]+)$/', $mainAddress, $addressEmulateMatch);
+      $tryReadNumber = trim(array_shift(end($addressEmulateMatch)));
+      $maybeIsANumberFromAddress = !empty($tryReadNumber) ? $tryReadNumber : 'S/N';
+
       $billing_address = [
-        'street' => isset($_POST['billing_address_1'])? $_POST['billing_address_1'] : $_POST['billing_wooccm11'],
-        'number' => isset($_POST['billing_number']) ? $_POST['billing_number'] : $_POST['billing_wooccm9'],
+        'street' => str_replace($maybeIsANumberFromAddress, '', str_replace(', ', '', $mainAddress)),
+        'number' => isset($_POST['billing_number']) ? $_POST['billing_number'] : $maybeIsANumberFromAddress,
         'complement' => isset($_POST['billing_address_2']) ? $_POST['billing_address_2'] : $_POST['billing_wooccm10'],
         'neighborhood' => isset($_POST['billing_neighborhood']) ? $_POST['billing_neighborhood'] : $_POST['billing_wooccm12'],
         'city' => $order->get_billing_city(),
@@ -300,26 +306,7 @@ function virtusPaymentGateInit(): void {
       $billing_address['city'] = $billingCepData->localidade;
       $billing_address['state'] = $billingCepData->uf;
 
-      $shipping_address = [
-        'street' => isset($_POST['shipping_address_1']) ? $_POST['shipping_address_1'] : $_POST['billing_wooccm11'],
-        'number' => isset($_POST['shipping_number']) ? $_POST['shipping_number'] : $_POST['shipping_wooccm9'],
-        'complement' => isset($_POST['shipping_address_2']) ? $_POST['shipping_address_2'] : $_POST['shipping_wooccm8'],
-        'neighborhood' => isset($_POST['shipping_neighborhood']) ? $_POST['shipping_neighborhood'] : $_POST['shipping_wooccm10'],
-        'city' => $order->get_shipping_city(),
-        'state' => $order->get_shipping_state(),
-        'cep' => $order->get_shipping_postcode()
-      ];
-
-      if(empty($shipping_address['cep'])) $shipping_address = $billing_address;
-      else {
-        $shippingCep = new Cep();
-        $shippingCep->query($shipping_address['cep']);
-        $shippingCepData = $shippingCep->response();
-
-        $shipping_address['neighborhood'] = $shippingCepData->bairro;
-        $shipping_address['city'] = $shippingCepData->localidade;
-        $shipping_address['state'] = $shippingCepData->uf;
-      }
+      $shipping_address = $billing_address;
 
       //Define a URL de callback com base na url sendo acessada atualmente
       //ToDo:: Checar necessidade de mudança
@@ -335,7 +322,7 @@ function virtusPaymentGateInit(): void {
         "income"=> $amount,
         "cellphone" => $costumerPhone,
         "email" => $costumerEmail,
-        "birthdate" => isset($_POST['birthdate']) ? $_POST['birthdate'] : null,
+        "birthdate" => isset($_POST['birthdate']) ? $_POST['birthdate'] : '1900-01-01',
         "customer_address" => $billing_address
       ];
 
@@ -353,19 +340,19 @@ function virtusPaymentGateInit(): void {
         "items" => $items
       ];
 
-      $proposal = new Fetch($this->authToken);
-      $proposal->post(VIRTUSENV.'/v1/order', $data);
-      $proposalResponse = $proposal->response();
-      die('<pre>'.print_r($proposalResponse, true).'</pre>');
+      $virtusProposal = new Fetch($this->authToken);
+      $virtusProposal->post(VIRTUSENV.'/v1/order', $data);
+      $proposal = $virtusProposal->response();
+
+      if(isset($proposal->detail)) {
+        return wc_add_notice($proposal->detail, 'error');
+      }
 
       //Adicionando notas para exibição no painel da order
-      $order->add_order_note('Pedido enviado para checkout VirtusPay.', true);
+      $order->add_order_note('Pedido enviado para checkout VirtusPay.');
 
-      $txLink = VIRTUSENV.'/salesman/order/'.$proposalResponse->transaction;
-      $order->add_order_note(
-        'Proposta disponível para consulta em: <a target="_blank" href='.$txLink.'>'.$txLink.'</a>',
-        false
-      );
+      $txLink = VIRTUSENV.'/salesman/order/'.$proposal->transaction;
+      $order->add_order_note('Proposta disponível para consulta em: <a target="_blank" href='.$txLink.'>'.$txLink.'</a>');
 
       $this->wc->cart->empty_cart();
       $order->reduce_order_stock();
@@ -373,7 +360,7 @@ function virtusPaymentGateInit(): void {
       //Redirect para nosso checkout
       return [
         'result' => 'success',
-        'redirect' => VIRTUSENV."/taker/order/{$proposalResponse->transaction}/accept"
+        'redirect' => VIRTUSENV.str_replace('/api', '', "/taker/order/{$proposal->transaction}/accept")
       ];
     }
   }
