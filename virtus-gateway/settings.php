@@ -6,9 +6,3 @@ define('DESCRIPTION', 'Pagamento parcelado no boleto com a VirtusPay', true);
 define('VIRTUSPAYMENTID', 'virtuspay', true);
 define('TESTURL', 'https://hml.usevirtus.com.br/api', true);
 define('PRODURL', 'https://www.usevirtus.com.br/api', true);
-
-function debug(array $data, bool $die = false): void {
-  $template = '<pre>'.print_r($data, true).'</pre>';
-  if($die) die($template);
-  echo $template.PHP_EOL;
-}

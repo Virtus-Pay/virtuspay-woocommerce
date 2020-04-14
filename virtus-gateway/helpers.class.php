@@ -1,5 +1,11 @@
 <?php
 class Helpers {
+  public static function debug(mixed $data, bool $die = false): void {
+    $template = '<pre>'.print_r($data, true).'</pre>';
+    if($die) die($template);
+    echo $template.PHP_EOL;
+  }
+
   public static function cpf(string $cpf): string {
     $cpf = preg_replace('/[^0-9]/is', '', $cpf);
 

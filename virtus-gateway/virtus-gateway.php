@@ -69,6 +69,7 @@ function virtusPaymentGateInit(): void {
     private $authTestToken;
     private $authProdToken;
     private $authToken;
+    private $remoteApiUrl;
 
     public function __construct() {
       global $woocommerce;
@@ -85,6 +86,7 @@ function virtusPaymentGateInit(): void {
       $this->return_url = (strlen($this->get_option('return_url')) > 0)? $this->get_option('return_url') : wc_get_checkout_url();
       $this->testmode = $this->get_option('testmode');
       $this->isTestMode = 'yes' === $this->testmode;
+      $this->remoteApiUrl = $this->isTestMode ? TESTURL : PRODURL;
 
       $this->authTestToken = $this->get_option('test_auth_token');
       $this->authProdToken = $this->get_option('auth_token');
@@ -114,22 +116,6 @@ function virtusPaymentGateInit(): void {
     // public function virtusGetInstallments(): string {
     //   return;
     // }
-
-    private function remoteApiUrl(): string {
-      if(
-        $this->isTestMode ||
-        (
-          $_SERVER['HTTP_HOST'] === 'localhost ' ||
-          filter_var($_SERVER['HTTP_HOST'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ||
-          filter_var($_SERVER['HTTP_HOST'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)
-        )
-      ) {
-        if($this->isTestMode) $this->isTestMode = false;
-        return TESTURL;
-      }
-
-      return PRODURL;
-    }
 
     public function init_form_fields(): void {
       $this->form_fields = [
@@ -226,7 +212,8 @@ function virtusPaymentGateInit(): void {
     }
 
     public function validate_fields(): bool {
-      $cpf = Helpers::cpf($_POST['billing_cpf']);
+      Helpers::debug($_POST, true);
+      // $cpf = Helpers::cpf($_POST['billing_cpf']);
 
       if(empty($cpf)) {
         wc_add_notice('O campo "CPF" é importante para emissão da proposta e é obrigatório.', 'error');
@@ -243,7 +230,7 @@ function virtusPaymentGateInit(): void {
         extract($_POST);
 
         $virtusProposal = new Fetch($this->authToken);
-        $virtusProposal->get($this->remoteApiUrl()."/v1/order/{$transaction}");
+        $virtusProposal->get($this->remoteApiUrl."/v1/order/{$transaction}");
         $proposal = $virtusProposal->response();
 
         if(isset($proposal->detail)) throw new \Exception($proposal->detail, true);
@@ -352,7 +339,7 @@ function virtusPaymentGateInit(): void {
       ];
 
       $virtusProposal = new Fetch($this->authToken);
-      $virtusProposal->post($this->remoteApiUrl().'/v1/order', $data);
+      $virtusProposal->post($this->remoteApiUrl.'/v1/order', $data);
       $proposal = $virtusProposal->response();
 
       if(isset($proposal->detail)) {
@@ -362,7 +349,7 @@ function virtusPaymentGateInit(): void {
       //Adicionando notas para exibição no painel da order
       $order->add_order_note('Pedido enviado para checkout VirtusPay.');
 
-      $txLink = $this->remoteApiUrl().'/salesman/order/'.$proposal->transaction;
+      $txLink = $this->remoteApiUrl.'/salesman/order/'.$proposal->transaction;
       $order->add_order_note('Proposta disponível para consulta em: <a target="_blank" href='.$txLink.'>'.$txLink.'</a>');
 
       $this->wc->cart->empty_cart();
@@ -371,7 +358,7 @@ function virtusPaymentGateInit(): void {
       //Redirect para nosso checkout
       return [
         'result' => 'success',
-        'redirect' => str_replace('/api', '', $this->remoteApiUrl())."/taker/order/{$proposal->transaction}/accept"
+        'redirect' => str_replace('/api', '', $this->remoteApiUrl)."/taker/order/{$proposal->transaction}/accept"
       ];
     }
   }
