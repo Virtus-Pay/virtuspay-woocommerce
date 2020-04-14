@@ -172,24 +172,22 @@ function virtusPaymentGateInit(): void {
     public function payment_fields(): void {
       if($this->description) {
         if ($this->isTestMode) {
-          $this->description = <<<EOT
-<b>!!! {$this->title} EM MODO DE TESTES !!!</b>
-EOT;
+          $this->description = "<b>!!! {$this->title} EM MODO DE TESTES !!!</b>";
         }
 
         echo wpautop(wp_kses_post($this->description));
       }
 
-      $response = <<<EOT
-<div class="woocommerce-billing-fields">
-<div class="form-row form-row-wide">
-<label class="" for="cpf">
-CPF <span class="required">*</span>
-</label>
-<input id="billing_cpf" name="billing_cpf" type="text" autocomplete="off" class="input-text cpf">
-</div>
-</div>
-EOT;
+      $response = '
+        <div class="woocommerce-billing-fields">
+          <div class="form-row form-row-wide">
+            <label class="" for="cpf">
+              CPF <span class="required">*</span>
+            </label>
+            <input id="billing_cpf" name="billing_cpf" type="text" autocomplete="off" class="input-text cpf">
+          </div>
+        </div>
+      ';
 
       echo $response;
     }
