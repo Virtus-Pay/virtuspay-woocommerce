@@ -113,6 +113,22 @@ function virtusPaymentGateInit(): void {
     //   return;
     // }
 
+    private function remoteApiUrl(): string {
+      if(
+        $this->isTestMode ||
+        (
+          $_SERVER['HTTP_HOST'] === 'localhost ' ||
+          filter_var($_SERVER['HTTP_HOST'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) ||
+          filter_var($_SERVER['HTTP_HOST'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)
+        )
+      ) {
+        if($this->isTestMode) $this->isTestMode = false;
+        return TESTURL;
+      }
+
+      return PRODURL;
+    }
+
     public function init_form_fields(): void {
       $this->form_fields = [
         'enabled' => [
@@ -209,7 +225,7 @@ function virtusPaymentGateInit(): void {
 
     public function validate_fields(): bool {
       $cpf = validaCPF($_POST['billing_cpf']);
-      
+
       if(empty($cpf)) {
         wc_add_notice('O campo "CPF" é importante para emissão da proposta e é obrigatório.', 'error');
         wc_add_notice('Verifique o campo "CPF" informado e tente novamente.', 'error');
@@ -225,7 +241,7 @@ function virtusPaymentGateInit(): void {
         extract($_POST);
 
         $virtusProposal = new Fetch($this->authToken);
-        $virtusProposal->get(VIRTUSENV."/v1/order/{$transaction}");
+        $virtusProposal->get($this->remoteApiUrl()."/v1/order/{$transaction}");
         $proposal = $virtusProposal->response();
 
         if(isset($proposal->detail)) throw new \Exception($proposal->detail, true);
@@ -334,7 +350,7 @@ function virtusPaymentGateInit(): void {
       ];
 
       $virtusProposal = new Fetch($this->authToken);
-      $virtusProposal->post(VIRTUSENV.'/v1/order', $data);
+      $virtusProposal->post($this->remoteApiUrl().'/v1/order', $data);
       $proposal = $virtusProposal->response();
 
       if(isset($proposal->detail)) {
@@ -344,7 +360,7 @@ function virtusPaymentGateInit(): void {
       //Adicionando notas para exibição no painel da order
       $order->add_order_note('Pedido enviado para checkout VirtusPay.');
 
-      $txLink = VIRTUSENV.'/salesman/order/'.$proposal->transaction;
+      $txLink = $this->remoteApiUrl().'/salesman/order/'.$proposal->transaction;
       $order->add_order_note('Proposta disponível para consulta em: <a target="_blank" href='.$txLink.'>'.$txLink.'</a>');
 
       $this->wc->cart->empty_cart();
@@ -353,7 +369,7 @@ function virtusPaymentGateInit(): void {
       //Redirect para nosso checkout
       return [
         'result' => 'success',
-        'redirect' => str_replace('/api', '', VIRTUSENV)."/taker/order/{$proposal->transaction}/accept"
+        'redirect' => str_replace('/api', '', $this->remoteApiUrl())."/taker/order/{$proposal->transaction}/accept"
       ];
     }
   }
