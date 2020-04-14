@@ -10,7 +10,7 @@ Author URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=lates
 declare(strict_types=1);
 
 require_once __DIR__.'/settings.php';
-require_once __DIR__.'/cpf.function.php';
+require_once __DIR__.'/helpers.class.php';
 require_once __DIR__.'/fetch.class.php';
 require_once __DIR__.'/cep.class.php';
 
@@ -226,7 +226,7 @@ function virtusPaymentGateInit(): void {
     }
 
     public function validate_fields(): bool {
-      $cpf = validaCPF($_POST['billing_cpf']);
+      $cpf = Helpers::cpf($_POST['billing_cpf']);
 
       if(empty($cpf)) {
         wc_add_notice('O campo "CPF" é importante para emissão da proposta e é obrigatório.', 'error');
