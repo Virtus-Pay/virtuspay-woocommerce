@@ -7,8 +7,6 @@ Version: 1.0
 Author: VirtusPay Dev Team
 Author URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
 */
-declare(strict_types=1);
-
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/helpers.class.php';
 require_once __DIR__.'/fetch.class.php';
@@ -212,7 +210,8 @@ function virtusPaymentGateInit(): void {
     }
 
     public function validate_fields(): bool {
-      if(!isset($_REQUEST["billing_cpf"]) || empty($_REQUEST["billing_cpf"]) || empty(Helpers::cpf($_REQUEST["billing_cpf"]))) {
+      $cpf = isset($_REQUEST['billing_cpf']) ? Helpers::cpf($_REQUEST['billing_cpf']) : '';
+      if(empty($cpf)) {
         wc_add_notice('O campo "CPF" é importante para emissão da proposta e é obrigatório.', 'error');
         wc_add_notice('Verifique o campo "CPF" informado e tente novamente.', 'error');
 
