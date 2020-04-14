@@ -14,16 +14,16 @@ class Fetch {
     if(strlen($token)) array_push($this->sentHeaders, 'Authorization: Token '.$token);
 
     $this->curl = curl_init();
+    curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, false);
   }
 
   public function get(string $url): void {
     curl_setopt($this->curl, CURLOPT_URL, $url);
     curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->sentHeaders);
     curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, "GET");
-    curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, false);
-    curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, false);
 
     $this->response = curl_exec($this->curl);
   }
@@ -36,10 +36,6 @@ class Fetch {
     curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->sentHeaders);
     curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, "POST");
     curl_setopt($this->curl, CURLOPT_POSTFIELDS, $data);
-    curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, false);
-    curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, false);
 
     $this->response = curl_exec($this->curl);
   }
