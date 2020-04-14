@@ -7,6 +7,8 @@ Version: 1.0
 Author: VirtusPay Dev Team
 Author URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
 */
+declare(strict_types=1);
+
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/cpf.function.php';
 require_once __DIR__.'/fetch.class.php';
