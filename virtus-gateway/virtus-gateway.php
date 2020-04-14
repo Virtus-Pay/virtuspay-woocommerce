@@ -220,6 +220,14 @@ function virtusPaymentGateInit(): void {
       return true;
     }
 
+    private function orderEntropyConcat(string $orderID): string {
+      return $orderID.'.'.time();
+    }
+
+    private function orderEntropyReverse(string $entropy): string {
+      return strstr($entropy, '.', true);
+    }
+
     public function virtusCallback() {
         // debug($_POST, true);
         extract($_POST);
@@ -233,7 +241,7 @@ function virtusPaymentGateInit(): void {
           throw new \Exception($proposal, true);
         }
 
-        $orderId = $proposal[0]['order_ref'];
+        $orderId = $this->orderEntropyReverse($proposal[0]['order_ref']);
 
         $order = wc_get_order($orderId);
         $order->add_order_note('Parcela de entrada paga.', true);
@@ -321,7 +329,7 @@ function virtusPaymentGateInit(): void {
 
       //Montando array com os dados da requisição
       $data = [
-        "order_ref" => $orderId,
+        "order_ref" => $this->orderEntropyConcat((string)$orderId),
         "customer" => $customer,
         "delivery_address" => $shipping_address,
         "total_amount" => $amount,
