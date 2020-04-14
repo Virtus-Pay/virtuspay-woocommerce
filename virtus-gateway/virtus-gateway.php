@@ -346,23 +346,25 @@ function virtusPaymentGateInit(): void {
       $proposal = $virtusProposal->response();
 
       if(isset($proposal->detail)) {
-        return wc_add_notice($proposal->detail, 'error');
+        wc_add_notice($proposal->detail, 'error');
+      }
+      else {
+        //Adicionando notas para exibição no painel da order
+        $order->add_order_note('Pedido enviado para checkout VirtusPay.');
+
+        $txLink = $this->remoteApiUrl.'/salesman/order/'.$proposal->transaction;
+        $order->add_order_note('Proposta disponível para consulta em: <a target="_blank" href='.$txLink.'>'.$txLink.'</a>');
+
+        $this->wc->cart->empty_cart();
+        $order->reduce_order_stock();
+
+        //Redirect para nosso checkout
+        return [
+          'result' => 'success',
+          'redirect' => str_replace('/api', '', $this->remoteApiUrl)."/taker/order/{$proposal->transaction}/accept"
+        ];
       }
 
-      //Adicionando notas para exibição no painel da order
-      $order->add_order_note('Pedido enviado para checkout VirtusPay.');
-
-      $txLink = $this->remoteApiUrl.'/salesman/order/'.$proposal->transaction;
-      $order->add_order_note('Proposta disponível para consulta em: <a target="_blank" href='.$txLink.'>'.$txLink.'</a>');
-
-      $this->wc->cart->empty_cart();
-      $order->reduce_order_stock();
-
-      //Redirect para nosso checkout
-      return [
-        'result' => 'success',
-        'redirect' => str_replace('/api', '', $this->remoteApiUrl)."/taker/order/{$proposal->transaction}/accept"
-      ];
     }
   }
 }
