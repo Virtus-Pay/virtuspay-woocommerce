@@ -104,6 +104,9 @@ function virtusPaymentGateInit(): void {
         "woocommerce_api_{$this->id}",
         [$this, 'virtusCallback']
       );
+      add_filter(
+        'woocommerce_billing_fields', 
+        [$this, 'custom_woocommerce_billing_fields'], 99);
 
       // add_action(
       //   "woocommerce_api_{$this->id}_installments",
@@ -366,5 +369,64 @@ function virtusPaymentGateInit(): void {
       }
 
     }
+    function custom_woocommerce_billing_fields($fields)
+		{
+			
+			$customer = WC()->session->get('customer');
+			$data = WC()->session->get('custom_data');
+			
+			/*$fields['billing_cpf'] = array(
+				'label' => __('CPF', 'woocommerce'), // Add custom field label
+				'placeholder' => _x('CPF', 'placeholder', 'woocommerce'), // Add custom field placeholder
+				'required' => false, // if field is required or not
+				'clear' => false, // add clear or not
+				'type' => 'number', // add field type
+				'class' => array('cpf')    // add class name
+			);*/
+			
+			if( isset($customer['first_name']) && ! empty($customer['first_name']) )
+			$fields['billing_first_name']['default'] = $customer['first_name'];
+
+			if( isset($customer['last_name']) && ! empty($customer['last_name']) )
+			$fields['billing_last_name']['default'] = $customer['last_name'];
+
+      if( isset($customer['income']) && ! empty($customer['income']) )
+      $fields['billing_income']['default'] = $customer['income'];
+
+			if( isset($customer['postcode']) && ! empty($customer['postcode']) )
+			$fields['billing_postcode']['default'] = $customer['postcode'];
+
+			if( isset($customer['address']) && ! empty($customer['address']) )
+			$fields['billing_address_1']['default'] = $customer['address'];
+
+      if( isset($customer['neighborhood']) && ! empty($customer['neighborhood']) )
+      $fields['billing_neighborhood']['default'] = $customer['neighborhood'];
+
+      if( isset($customer['city']) && ! empty($customer['city']) )
+			$fields['billing_city']['default'] = $customer['city'];
+
+			if( isset($customer['state']) && ! empty($customer['state']) )
+			$fields['billing_state']['default'] = $customer['state'];
+			
+			if( isset($customer['phone']) && ! empty($customer['phone']) )
+			$fields['billing_phone']['default'] = $customer['phone'];
+
+			if( isset($customer['email']) && ! empty($customer['email']) )
+			$fields['billing_email']['default'] = $customer['email'];
+
+			if( isset($data['billing_cpf']) && ! empty($data['billing_cpf']) )
+			$fields['billing_cpf']['default'] = $data['billing_cpf'];
+
+			if( isset($data['billing_persontype']) && ! empty($data['billing_persontype']) )
+			$fields['billing_persontype']['default'] = $data['billing_persontype'];
+
+			if( isset($data['billing_birthdate']) && ! empty($data['billing_birthdate']) )
+			$fields['billing_birthdate']['default'] = $data['billing_birthdate'];
+								
+			if( isset($data['billing_number']) && ! empty($data['billing_number']) )
+			$fields['billing_number']['default'] = $data['billing_number'];
+						
+			return $fields;
+		}
   }
 }
