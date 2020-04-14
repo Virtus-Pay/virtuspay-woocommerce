@@ -226,7 +226,7 @@ function virtusPaymentGateInit(): void {
     }
 
     public function validate_fields(): bool {
-      $cpf = validaCPF($_POST['billing_cpf']);
+      $cpf = validaCPF(addslashes($_POST['billing_cpf']));
 
       if(empty($cpf)) {
         wc_add_notice('O campo "CPF" é importante para emissão da proposta e é obrigatório.', 'error');

@@ -1,5 +1,5 @@
 <?php
-function validaCPF($cpf) {
+function validaCPF(string $cpf): string {
   $cpf = preg_replace('/[^0-9]/is', '', $cpf);
 
   if(strlen($cpf) != 11) return '';
