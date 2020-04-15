@@ -44,7 +44,8 @@ function virtusPaymentGateInit(): void {
 		return $methods;
 	}
 
-  if(!class_exists('WC_Payment_Gateway')) return;
+  if(!class_exists('WC_Payment_Gateway'))
+    throw new \Exception('É necessária a instalação do Woocommerce', 0);
 
   class WooCommerceVirtusPayment extends WC_Payment_Gateway {
     public $id = VIRTUSPAYMENTID;
@@ -100,25 +101,28 @@ function virtusPaymentGateInit(): void {
         [$this, 'payment_scripts']
       );
 
-      add_filter(
-        'woocommerce_billing_fields',
-        [$this, 'custom_woocommerce_billing_fields'], 99);
-
-      // API ////////////////////////////////////
+      // Begin APIs Endpoints
       add_action(
         "woocommerce_api_{$this->id}",
         [$this, 'virtusCallback']
       );
 
-      // add_action(
-      //   "woocommerce_api_{$this->id}_installments",
-      //   [$this, 'virtusGetInstallments']
-      // );
+      add_action(
+        "woocommerce_api_{$this->id}_installments",
+        [$this, 'virtusGetInstallments']
+      );
+      // End APIs Endpoints
+
+      add_filter(
+        'woocommerce_billing_fields',
+        [Helpers, 'custom_woocommerce_billing_fields'],
+        10
+      );
     }
 
-    // public function virtusGetInstallments(): string {
-    //   return;
-    // }
+    public function virtusGetInstallments(): string {
+      return '';
+    }
 
     public function init_form_fields(): void {
       $this->form_fields = [
@@ -174,41 +178,41 @@ function virtusPaymentGateInit(): void {
       ];
     }
 
-    public function payment_fields(): void {
-      if($this->description) {
-        if ($this->isTestMode) {
-          $this->description = "<b>!!! {$this->title} EM MODO DE TESTES !!!</b>";
-        }
-
-        echo wpautop(wp_kses_post($this->description));
-      }
-
-      $response = '
-        <div class="woocommerce-billing-fields">
-          <div class="form-row form-row-wide">
-            <label class="" for="cpf">
-              CPF <span class="required">*</span>
-            </label>
-            <input id="billing_cpf" name="billing_cpf" type="text" autocomplete="off" class="input-text cpf">
-          </div>
-        </div>
-      ';
-
-      echo $response;
-    }
-
-    public function validate_fields(): bool {
-      $cpf = Helpers::cpf(isset($_REQUEST['billing_cpf']) ? "{$_REQUEST['billing_cpf']}" : "");
-
-      if(empty($cpf)) {
-        wc_add_notice('O campo "CPF" é importante para emissão da proposta e é obrigatório.', 'error');
-        wc_add_notice('Verifique o campo "CPF" informado e tente novamente.', 'error');
-
-        return false;
-      }
-
-      return true;
-    }
+    // public function payment_fields(): void {
+    //   if($this->description) {
+    //     if ($this->isTestMode) {
+    //       $this->description = "<b>!!! {$this->title} EM MODO DE TESTES !!!</b>";
+    //     }
+    //
+    //     echo wpautop(wp_kses_post($this->description));
+    //   }
+    //
+    //   $response = '
+    //     <div class="woocommerce-billing-fields">
+    //       <div class="form-row form-row-wide">
+    //         <label class="" for="cpf">
+    //           CPF <span class="required">*</span>
+    //         </label>
+    //         <input id="billing_cpf" name="billing_cpf" type="text" autocomplete="off" class="input-text cpf">
+    //       </div>
+    //     </div>
+    //   ';
+    //
+    //   echo $response;
+    // }
+    //
+    // public function validate_fields(): bool {
+    //   $cpf = Helpers::cpf($_POST['billing_cpf']);
+    //
+    //   if(empty($cpf)) {
+    //     wc_add_notice('O campo "CPF" é importante para emissão da proposta e é obrigatório.', 'error');
+    //     wc_add_notice('Verifique o campo "CPF" informado e tente novamente.', 'error');
+    //
+    //     return false;
+    //   }
+    //
+    //   return true;
+    // }
 
     public function payment_scripts(): void {
       wp_enqueue_style($this->id, PLUGINURL.'/virtus.css');
@@ -223,19 +227,6 @@ function virtusPaymentGateInit(): void {
         ['jquery', 'virtusMasked']
       );
       wp_enqueue_script('virtusGateway');
-    }
-
-    public function validate_fields(): bool {
-      $cpf = Helpers::cpf(isset($_REQUEST['billing_cpf']) ? "{$_REQUEST['billing_cpf']}" : "");
-
-      if(empty($cpf)) {
-        wc_add_notice('O campo "CPF" é importante para emissão da proposta e é obrigatório.', 'error');
-        wc_add_notice('Verifique o campo "CPF" informado e tente novamente.', 'error');
-
-        return false;
-      }
-
-      return true;
     }
 
     private function orderEntropyConcat(string $orderID): string {
@@ -382,109 +373,6 @@ function virtusPaymentGateInit(): void {
           'redirect' => str_replace('/api', '', $this->remoteApiUrl)."/taker/order/{$proposal->transaction}/accept"
         ];
       }
-
     }
-    function custom_woocommerce_billing_fields($fields)
-		{
-			$new_fields = $fields;
-			$customer = WC()->session->get('customer');
-      $data = WC()->session->get('custom_data');
-      
-      $new_fields['billing_cpf'] = array(
-        'label'    => __( 'CPF', 'custom-woocommerce-billing-fields' ),
-        'class'    => array( 'form-row-first', 'person-type-field' ),
-        'required' => true,
-        'type'     => 'tel',
-        'priority' => 23,
-      );
-
-      $new_fields['billing_birthdate'] = array(
-				'label'    => __( 'Data Nascimento', 'custom-woocommerce-billing-fields' ),
-				'class'    => array( 'form-row-last' ),
-				'clear'    => false,
-        'required' => true,
-        'type'     => 'date',
-				'priority' => 100,
-      );
-
-      $new_fields['billing_neighborhood'] = array(
-        'label'    => __( 'Bairro', 'custom-woocommerce-billing-fields' ),
-        'class'    => array( 'form-row-first', 'address-field' ),
-        'required' => true,
-        'clear'    => true,
-        'priority' => 65,
-      );
-
-      $new_fields['billing_income'] = array(
-        'label'    => __( 'Renda', 'custom-woocommerce-billing-fields' ),
-        'class'    => array( 'form-row-last', 'income-field' ),
-        'required' => true,
-        'type'     => 'tel',
-        'clear'    => true,
-        'priority' => 24,
-      );
-
-      $new_fields['billing_number'] = array(
-        'label'    => __( 'Número', 'custom-woocommerce-billing-fields' ),
-        'class'    => array( 'form-row-first', 'address-field' ),
-        'clear'    => true,
-        'required' => true,
-        'priority' => 55,
-      );
-
-      $new_fields['billing_address_2']['label'] = __( 'Complemento', 'custom-woocommerce-billing-fields' );
-      $new_fields['billing_address_2']['class'] = array( 'form-row-last', 'address-field' );
-      
-			if( isset($customer['first_name']) && ! empty($customer['first_name']) )
-			$new_fields['billing_first_name']['default'] = $customer['first_name'];
-
-			if( isset($customer['last_name']) && ! empty($customer['last_name']) )
-			$new_fields['billing_last_name']['default'] = $customer['last_name'];
-
-      if( isset($customer['income']) && ! empty($customer['income']) )
-      $new_fields['billing_income']['default'] = $customer['income'];
-
-			if( isset($customer['postcode']) && ! empty($customer['postcode']) )
-      $new_fields['billing_postcode']['default'] = $customer['postcode'];
-      $new_fields['billing_postcode']['class'] = array( 'form-row-last', 'income-field' );
-
-			if( isset($customer['address']) && ! empty($customer['address']) )
-			$new_fields['billing_address_1']['default'] = $customer['address'];
-
-      if( isset($customer['neighborhood']) && ! empty($customer['neighborhood']) )
-      $new_fields['billing_neighborhood']['default'] = $customer['neighborhood'];
-
-      
-      if( isset($customer['city']) && ! empty($customer['city']) )
-      $new_fields['billing_city']['default'] = $customer['city'];
-      $new_fields['billing_city']['priority'] = 66;
-      $new_fields['billing_city']['class'] = array( 'form-row-last', 'address-field' );
-
-			if( isset($customer['state']) && ! empty($customer['state']) )
-			$new_fields['billing_state']['default'] = $customer['state'];
-			
-			if( isset($customer['phone']) && ! empty($customer['phone']) )
-      $new_fields['billing_phone']['default'] = $customer['phone'];
-      $new_fields['billing_phone']['class'] = array( 'form-row-first' );
-			$new_fields['billing_phone']['clear'] = false;
-
-			if( isset($customer['email']) && ! empty($customer['email']) )
-      $new_fields['billing_email']['default'] = $customer['email'];
-      $new_fields['billing_email']['priority'] = 20;
-
-			if( isset($data['billing_cpf']) && ! empty($data['billing_cpf']) )
-			$new_fields['billing_cpf']['default'] = $data['billing_cpf'];
-
-			if( isset($data['billing_persontype']) && ! empty($data['billing_persontype']) )
-			$new_fields['billing_persontype']['default'] = $data['billing_persontype'];
-
-			if( isset($data['billing_birthdate']) && ! empty($data['billing_birthdate']) )
-			$new_fields['billing_birthdate']['default'] = $data['billing_birthdate'];
-              
-			if( isset($data['billing_number']) && ! empty($data['billing_number']) )
-			$new_fields['billing_number']['default'] = $data['billing_number'];
-						
-      return apply_filters( 'wcbcf_billing_fields', $new_fields );
-		}
   }
 }
