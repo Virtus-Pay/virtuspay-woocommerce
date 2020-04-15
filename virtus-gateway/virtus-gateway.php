@@ -293,7 +293,7 @@ function virtusPaymentGateInit(): void {
         "income"=> $amount,
         "cellphone" => $costumerPhone,
         "email" => $costumerEmail,
-        "birthdate" => isset($_POST['birthdate']) ? $_POST['birthdate'] : '1900-01-01',
+        "birthdate" => isset($_POST['billing_birthdate']) ? $_POST['billing_birthdate'] : '1900-01-01',
         "customer_address" => $billing_address
       ];
 
