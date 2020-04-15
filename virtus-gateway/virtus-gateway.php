@@ -277,14 +277,6 @@ function virtusPaymentGateInit(): void {
         'cep' => $order->get_billing_postcode()
       ];
 
-      $billingCep = new Cep();
-      $billingCep->query($billing_address['cep']);
-      $billingCepData = $billingCep->response();
-
-      $billing_address['neighborhood'] = $billingCepData->bairro;
-      $billing_address['city'] = $billingCepData->localidade;
-      $billing_address['state'] = $billingCepData->uf;
-
       $shipping_address = $billing_address;
 
       //Define a URL de callback com base na url sendo acessada atualmente
