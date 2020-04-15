@@ -102,6 +102,10 @@ function virtusPaymentGateInit(): void {
       );
       // End APIs Endpoints
 
+      add_filter(
+        'woocommerce_billing_fields', 
+        [$this, 'custom_woocommerce_billing_fields'], 15);
+
       register_activation_hook(__FILE__, [$this, 'child_plugin_has_parent_plugin']);
     }
 
@@ -245,7 +249,7 @@ function virtusPaymentGateInit(): void {
       $items = [];
 
       foreach($cartItems as $item) {
-        array_push($description, $item['quantity']."x".$item['data']->get_title());
+        array_push($description, $item['quantity']."x ".$item['data']->get_title());
         array_push($items, [
           "product" => $item['data']->get_name(),
           "price" => $item['data']->get_price(),
@@ -260,7 +264,7 @@ function virtusPaymentGateInit(): void {
       $costumerId = $order->get_user_id();
       $orderId = $order->get_order_number();
       $cpf = isset($_POST['billing_cpf']) ? $_POST['billing_cpf'] : $_POST['billing_wooccm8'];
-
+      $income = isset($_POST['billing_income']) ? $_POST['billing_income'] : 1500.00;
       $mainAddress = isset($_POST['billing_address_1'])? $_POST['billing_address_1'] : $_POST['billing_wooccm11'];
 
       preg_match_all('/([^,])([0-9a-zA-Z\-\ \/]+)$/', $mainAddress, $addressEmulateMatch);
@@ -268,7 +272,8 @@ function virtusPaymentGateInit(): void {
       $maybeIsANumberFromAddress = !empty($tryReadNumber) ? $tryReadNumber : 'S/N';
 
       $billing_address = [
-        'street' => str_replace($maybeIsANumberFromAddress, '', str_replace(', ', '', $mainAddress)),
+        // 'street' => str_replace($maybeIsANumberFromAddress, '', str_replace(', ', '', $mainAddress)),
+        'street' => $mainAddress,
         'number' => isset($_POST['billing_number']) ? $_POST['billing_number'] : $maybeIsANumberFromAddress,
         'complement' => isset($_POST['billing_address_2']) ? $_POST['billing_address_2'] : $_POST['billing_wooccm10'],
         'neighborhood' => isset($_POST['billing_neighborhood']) ? $_POST['billing_neighborhood'] : $_POST['billing_wooccm12'],
@@ -285,13 +290,13 @@ function virtusPaymentGateInit(): void {
 
       $costumerName = $order->get_billing_first_name()." ".$order->get_billing_last_name();
       $costumerEmail = $order->get_billing_email();
-      $costumerPhone = isset($_POST['billing_phone']) ? $_POST['billing_phone'] : $_POST['billing_wooccm13'];
+      $costumerPhone = isset($_POST['billing_cellphone']) ? $_POST['billing_cellphone'] : $_POST['billing_phone'];
       $birthdate = isset($_POST['billing_birthdate']) ? $_POST['billing_birthdate'] : '01-01-1900';
 
       $customer = [
         "full_name" => $costumerName,
         "cpf" => $cpf,
-        "income"=> $amount,
+        "income"=> $income,
         "cellphone" => $costumerPhone,
         "email" => $costumerEmail,
         "birthdate" => date('Y-m-d', strtotime(str_replace('/', '-', $birthdate))),
@@ -336,5 +341,25 @@ function virtusPaymentGateInit(): void {
         ];
       }
     }
+
+    function custom_woocommerce_billing_fields($fields)
+		{
+			$new_fields = $fields;
+			$customer = WC()->session->get('customer');
+      $data = WC()->session->get('custom_data');
+      $new_fields['billing_income'] = array(
+        'label'    => __( 'Renda', 'custom-woocommerce-billing-fields' ),
+        'class'    => array( 'form-row-last', 'income-field' ),
+        'required' => true,
+        'type'     => 'tel',
+        'clear'    => true,
+        'priority' => 24,
+      );
+      $new_fields['billing_cpf']['class'] = array( 'form-row-first', 'person-type-field' );
+      $new_fields['billing_neighborhood']['required']	= true;
+      $new_fields['shipping_neighborhood']['required']	= true;
+      $new_fields['billing_cellphone']['required']	= true;
+      return apply_filters( 'wcbcf_billing_fields', $new_fields );
+		}
   }
 }
