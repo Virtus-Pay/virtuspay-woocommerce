@@ -3,14 +3,13 @@
 Plugin Name: WooCommerce VirtusPay
 Plugin URI: https://usevirtus.com.br
 Description: Pagamentos para o WooCommerce através da VirtusPay.
-Version: 1.0
+Version: 1.1
 Author: VirtusPay Dev Team
 Author URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
 */
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/helpers.class.php';
 require_once __DIR__.'/fetch.class.php';
-require_once __DIR__.'/cep.class.php';
 
 add_action('plugins_loaded', 'virtusPaymentGateInit', 0);
 function virtusPaymentGateInit(): void {
@@ -91,16 +90,6 @@ function virtusPaymentGateInit(): void {
       $this->authProdToken = $this->get_option('auth_token');
       $this->authToken = $this->isTestMode ? $this->authTestToken : $this->authProdToken;
 
-      add_action(
-        'woocommerce_update_options_payment_gateways_'.$this->id,
-        [$this, 'process_admin_options']
-      );
-
-      add_action(
-        'wp_enqueue_scripts',
-        [$this, 'payment_scripts']
-      );
-
       // Begin APIs Endpoints
       add_action(
         "woocommerce_api_{$this->id}",
@@ -113,12 +102,43 @@ function virtusPaymentGateInit(): void {
       );
       // End APIs Endpoints
 
-      add_filter(
-        'woocommerce_billing_fields',
-        [Helpers, 'custom_woocommerce_billing_fields'],
-        10
-      );
+      register_activation_hook(__FILE__, [$this, 'child_plugin_has_parent_plugin']);
     }
+
+    public function child_plugin_has_parent_plugin() {
+      $plugin_slug = 'woocommerce-extra-checkout-fields-for-brazil';
+			if(
+        is_admin() &&
+        current_user_can('activate_plugins') &&
+        !is_plugin_active($plugin_slug.'/'.$plugin_slug.'.php')
+      ) {
+        if(current_user_can('install_plugins')) {
+        	$url = wp_nonce_url(
+            self_admin_url(
+              'update.php?action=install-plugin&plugin='.$plugin_slug
+            ),
+            'install-plugin_'.$plugin_slug
+          );
+        }
+        else $url = 'http://wordpress.org/plugins/'.$plugin_slug;
+
+        echo '
+          <div class="error">
+          	<p>
+              <strong>'.$this->title.' foi desabilitado</strong>: <br />
+              Esta extensão para pagamentos depende de um plugin para gerenciamento de campos para pagamentos que pode ser encontrado <a href="'.$url.'">aqui</a>.
+            </p>
+            <p>
+              Após a instalação desta dependência, tente habilitar o plugin '.$this->title.' novamente.
+            </p>
+          </div>
+        ';
+
+				deactivate_plugins(plugin_basename( __FILE__ ));
+
+        if(isset($_GET['activate'])) unset($_GET['activate']);
+			}
+		}
 
     public function virtusGetInstallments(): string {
       return '';
@@ -176,57 +196,6 @@ function virtusPaymentGateInit(): void {
           'desc_tip' => true
         ]
       ];
-    }
-
-    // public function payment_fields(): void {
-    //   if($this->description) {
-    //     if ($this->isTestMode) {
-    //       $this->description = "<b>!!! {$this->title} EM MODO DE TESTES !!!</b>";
-    //     }
-    //
-    //     echo wpautop(wp_kses_post($this->description));
-    //   }
-    //
-    //   $response = '
-    //     <div class="woocommerce-billing-fields">
-    //       <div class="form-row form-row-wide">
-    //         <label class="" for="cpf">
-    //           CPF <span class="required">*</span>
-    //         </label>
-    //         <input id="billing_cpf" name="billing_cpf" type="text" autocomplete="off" class="input-text cpf">
-    //       </div>
-    //     </div>
-    //   ';
-    //
-    //   echo $response;
-    // }
-    //
-    // public function validate_fields(): bool {
-    //   $cpf = Helpers::cpf($_POST['billing_cpf']);
-    //
-    //   if(empty($cpf)) {
-    //     wc_add_notice('O campo "CPF" é importante para emissão da proposta e é obrigatório.', 'error');
-    //     wc_add_notice('Verifique o campo "CPF" informado e tente novamente.', 'error');
-    //
-    //     return false;
-    //   }
-    //
-    //   return true;
-    // }
-
-    public function payment_scripts(): void {
-      wp_enqueue_style($this->id, PLUGINURL.'/virtus.css');
-      wp_enqueue_script('virtusMasked', PLUGINURL.'/jquery-mask-plugin/dist/jquery.mask.min.js');
-
-      wp_register_script(
-        'virtusGateway',
-        plugins_url(
-          'virtus-gateway.js',
-          __FILE__
-        ),
-        ['jquery', 'virtusMasked']
-      );
-      wp_enqueue_script('virtusGateway');
     }
 
     private function orderEntropyConcat(string $orderID): string {
