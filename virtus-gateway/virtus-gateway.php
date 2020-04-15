@@ -106,7 +106,7 @@ function virtusPaymentGateInit(): void {
       );
       add_filter(
         'woocommerce_billing_fields', 
-        [$this, 'custom_woocommerce_billing_fields'], 99);
+        [$this, 'custom_woocommerce_billing_fields'], 15);
 
       // add_action(
       //   "woocommerce_api_{$this->id}_installments",
@@ -375,7 +375,7 @@ function virtusPaymentGateInit(): void {
 			$new_fields = $fields;
 			$customer = WC()->session->get('customer');
       $data = WC()->session->get('custom_data');
-      
+      /*
       $new_fields['billing_cpf'] = array(
         'label'    => __( 'CPF', 'custom-woocommerce-billing-fields' ),
         'class'    => array( 'form-row-first', 'person-type-field' ),
@@ -398,17 +398,10 @@ function virtusPaymentGateInit(): void {
         'class'    => array( 'form-row-first', 'address-field' ),
         'required' => true,
         'clear'    => true,
-        'priority' => 65,
+        'priority' => 2,
       );
 
-      $new_fields['billing_income'] = array(
-        'label'    => __( 'Renda', 'custom-woocommerce-billing-fields' ),
-        'class'    => array( 'form-row-last', 'income-field' ),
-        'required' => true,
-        'type'     => 'tel',
-        'clear'    => true,
-        'priority' => 24,
-      );
+      
 
       $new_fields['billing_number'] = array(
         'label'    => __( 'Número', 'custom-woocommerce-billing-fields' ),
@@ -432,7 +425,9 @@ function virtusPaymentGateInit(): void {
 
 			if( isset($customer['postcode']) && ! empty($customer['postcode']) )
       $new_fields['billing_postcode']['default'] = $customer['postcode'];
-      $new_fields['billing_postcode']['class'] = array( 'form-row-last', 'income-field' );
+      $new_fields['billing_postcode']['class'] = array( 'form-row-last', 'cep-field' );
+      $new_fields['billing_postcode']['priority'] = 1;
+      $new_fields['billing_postcode']['label'] = __( 'C E P', 'custom-woocommerce-billing-fields' );
 
 			if( isset($customer['address']) && ! empty($customer['address']) )
 			$new_fields['billing_address_1']['default'] = $customer['address'];
@@ -469,7 +464,18 @@ function virtusPaymentGateInit(): void {
               
 			if( isset($data['billing_number']) && ! empty($data['billing_number']) )
 			$new_fields['billing_number']['default'] = $data['billing_number'];
-						
+      */	
+      $new_fields['billing_income'] = array(
+        'label'    => __( 'Renda', 'custom-woocommerce-billing-fields' ),
+        'class'    => array( 'form-row-last', 'income-field' ),
+        'required' => true,
+        'type'     => 'tel',
+        'clear'    => true,
+        'priority' => 24,
+      );
+      $new_fields['billing_cpf']['class'] = array( 'form-row-first', 'person-type-field' );
+      $new_fields['billing_neighborhood']['required']	= true;
+      $new_fields['billing_cellphone']['required']	= true;
       return apply_filters( 'wcbcf_billing_fields', $new_fields );
 		}
   }
