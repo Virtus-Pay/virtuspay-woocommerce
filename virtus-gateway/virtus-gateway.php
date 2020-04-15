@@ -180,7 +180,7 @@ function virtusPaymentGateInit(): void {
 
         echo wpautop(wp_kses_post($this->description));
       }
-
+      /*
       $response = '
         <div class="woocommerce-billing-fields">
           <div class="form-row form-row-wide">
@@ -193,6 +193,7 @@ function virtusPaymentGateInit(): void {
       ';
 
       echo $response;
+      */
     }
 
     public function payment_scripts(): void {
@@ -371,62 +372,105 @@ function virtusPaymentGateInit(): void {
     }
     function custom_woocommerce_billing_fields($fields)
 		{
-			
+			$new_fields = $fields;
 			$customer = WC()->session->get('customer');
-			$data = WC()->session->get('custom_data');
-			
-			/*$fields['billing_cpf'] = array(
-				'label' => __('CPF', 'woocommerce'), // Add custom field label
-				'placeholder' => _x('CPF', 'placeholder', 'woocommerce'), // Add custom field placeholder
-				'required' => false, // if field is required or not
-				'clear' => false, // add clear or not
-				'type' => 'number', // add field type
-				'class' => array('cpf')    // add class name
-			);*/
-			
+      $data = WC()->session->get('custom_data');
+      
+      $new_fields['billing_cpf'] = array(
+        'label'    => __( 'CPF', 'custom-woocommerce-billing-fields' ),
+        'class'    => array( 'form-row-first', 'person-type-field' ),
+        'required' => true,
+        'type'     => 'tel',
+        'priority' => 23,
+      );
+
+      $new_fields['billing_birthdate'] = array(
+				'label'    => __( 'Data Nascimento', 'custom-woocommerce-billing-fields' ),
+				'class'    => array( 'form-row-last' ),
+				'clear'    => false,
+        'required' => true,
+        'type'     => 'date',
+				'priority' => 100,
+      );
+
+      $new_fields['billing_neighborhood'] = array(
+        'label'    => __( 'Bairro', 'custom-woocommerce-billing-fields' ),
+        'class'    => array( 'form-row-first', 'address-field' ),
+        'required' => true,
+        'clear'    => true,
+        'priority' => 65,
+      );
+
+      $new_fields['billing_income'] = array(
+        'label'    => __( 'Renda', 'custom-woocommerce-billing-fields' ),
+        'class'    => array( 'form-row-last', 'income-field' ),
+        'required' => true,
+        'type'     => 'tel',
+        'clear'    => true,
+        'priority' => 24,
+      );
+
+      $new_fields['billing_number'] = array(
+        'label'    => __( 'Número', 'custom-woocommerce-billing-fields' ),
+        'class'    => array( 'form-row-first', 'address-field' ),
+        'clear'    => true,
+        'required' => true,
+        'priority' => 55,
+      );
+
+      $new_fields['billing_address_2']['label'] = __( 'Complemento', 'custom-woocommerce-billing-fields' );
+      $new_fields['billing_address_2']['class'] = array( 'form-row-last', 'address-field' );
+      
 			if( isset($customer['first_name']) && ! empty($customer['first_name']) )
-			$fields['billing_first_name']['default'] = $customer['first_name'];
+			$new_fields['billing_first_name']['default'] = $customer['first_name'];
 
 			if( isset($customer['last_name']) && ! empty($customer['last_name']) )
-			$fields['billing_last_name']['default'] = $customer['last_name'];
+			$new_fields['billing_last_name']['default'] = $customer['last_name'];
 
       if( isset($customer['income']) && ! empty($customer['income']) )
-      $fields['billing_income']['default'] = $customer['income'];
+      $new_fields['billing_income']['default'] = $customer['income'];
 
 			if( isset($customer['postcode']) && ! empty($customer['postcode']) )
-			$fields['billing_postcode']['default'] = $customer['postcode'];
+      $new_fields['billing_postcode']['default'] = $customer['postcode'];
+      $new_fields['billing_postcode']['class'] = array( 'form-row-last', 'income-field' );
 
 			if( isset($customer['address']) && ! empty($customer['address']) )
-			$fields['billing_address_1']['default'] = $customer['address'];
+			$new_fields['billing_address_1']['default'] = $customer['address'];
 
       if( isset($customer['neighborhood']) && ! empty($customer['neighborhood']) )
-      $fields['billing_neighborhood']['default'] = $customer['neighborhood'];
+      $new_fields['billing_neighborhood']['default'] = $customer['neighborhood'];
 
+      
       if( isset($customer['city']) && ! empty($customer['city']) )
-			$fields['billing_city']['default'] = $customer['city'];
+      $new_fields['billing_city']['default'] = $customer['city'];
+      $new_fields['billing_city']['priority'] = 66;
+      $new_fields['billing_city']['class'] = array( 'form-row-last', 'address-field' );
 
 			if( isset($customer['state']) && ! empty($customer['state']) )
-			$fields['billing_state']['default'] = $customer['state'];
+			$new_fields['billing_state']['default'] = $customer['state'];
 			
 			if( isset($customer['phone']) && ! empty($customer['phone']) )
-			$fields['billing_phone']['default'] = $customer['phone'];
+      $new_fields['billing_phone']['default'] = $customer['phone'];
+      $new_fields['billing_phone']['class'] = array( 'form-row-first' );
+			$new_fields['billing_phone']['clear'] = false;
 
 			if( isset($customer['email']) && ! empty($customer['email']) )
-			$fields['billing_email']['default'] = $customer['email'];
+      $new_fields['billing_email']['default'] = $customer['email'];
+      $new_fields['billing_email']['priority'] = 20;
 
 			if( isset($data['billing_cpf']) && ! empty($data['billing_cpf']) )
-			$fields['billing_cpf']['default'] = $data['billing_cpf'];
+			$new_fields['billing_cpf']['default'] = $data['billing_cpf'];
 
 			if( isset($data['billing_persontype']) && ! empty($data['billing_persontype']) )
-			$fields['billing_persontype']['default'] = $data['billing_persontype'];
+			$new_fields['billing_persontype']['default'] = $data['billing_persontype'];
 
 			if( isset($data['billing_birthdate']) && ! empty($data['billing_birthdate']) )
-			$fields['billing_birthdate']['default'] = $data['billing_birthdate'];
-								
+			$new_fields['billing_birthdate']['default'] = $data['billing_birthdate'];
+              
 			if( isset($data['billing_number']) && ! empty($data['billing_number']) )
-			$fields['billing_number']['default'] = $data['billing_number'];
+			$new_fields['billing_number']['default'] = $data['billing_number'];
 						
-			return $fields;
+      return apply_filters( 'wcbcf_billing_fields', $new_fields );
 		}
   }
 }
