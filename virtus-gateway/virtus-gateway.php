@@ -247,7 +247,6 @@ function virtusPaymentGateInit(): void {
       // E = aprova o pedido
       if($proposal->status === 'E') {
         $order->update_status('completed', 'Parcela de entrada paga.');
-        $order->payment_complete();
       }
 
       // R e C = cancela o pedido
