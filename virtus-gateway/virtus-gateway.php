@@ -251,7 +251,7 @@ function virtusPaymentGateInit(): void {
 
       // R e C = cancela o pedido
       if(in_array($proposal->status, ['R', 'C'])) {
-        $order->update_status('canceled', 'Proposta cancelada.');
+        $order->update_status('failed', 'Proposta cancelada.');
       }
 
       // P, N, A = status processando
