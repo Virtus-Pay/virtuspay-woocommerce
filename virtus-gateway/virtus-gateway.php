@@ -108,6 +108,10 @@ function virtusPaymentGateInit(): void {
         15
       );
 
+      add_action( 
+        'woocommerce_update_options_payment_gateways_' . $this->id, 
+        array( $this, 'process_admin_options' ) );
+
       // Begin JS Scripts
       wp_enqueue_script(
         'virtus-jquery-mask',
@@ -307,7 +311,7 @@ function virtusPaymentGateInit(): void {
       $customer = [
         "full_name" => $costumerName,
         "cpf" => $cpf,
-        "income"=> $income,
+        "income"=> number_format(str_replace(',', '.', str_replace('.', '', $income)), 2, ".", ""),
         "cellphone" => $costumerPhone,
         "email" => $costumerEmail,
         "birthdate" => date('Y-m-d', strtotime(str_replace('/', '-', $birthdate))),
