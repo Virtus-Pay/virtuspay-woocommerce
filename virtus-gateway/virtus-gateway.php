@@ -233,22 +233,34 @@ function virtusPaymentGateInit(): void {
     public function virtusCallback() {
       $virtus = json_decode(file_get_contents('php://input'), true);
 
-      if(!isset($virtus->transaction)) throw new \Exception('Não foi recebido o identificador da transação.', true);
+      if(!isset($virtus['transaction'])) throw new \Exception('Não foi recebido o identificador da transação.', true);
       $virtusProposal = new Fetch($this->authToken);
-      $virtusProposal->get($this->remoteApiUrl."/v1/order/{$virtus->transaction}");
-      $proposal = $virtusProposal->response();
+      $virtusProposal->get($this->remoteApiUrl."/v1/order/{$virtus['transaction']}");
+      $proposalResponse = $virtusProposal->response();
+      $proposal = array_shift($proposalResponse);
 
       if(isset($proposal->detail)) throw new \Exception($proposal->detail, true);
-      if(is_array($proposal) && isset($proposal->status) && $proposal->status !== "E") {
-        throw new \Exception($proposal, true);
-      }
 
       $orderId = $this->orderEntropyReverse($proposal->order_ref);
       $order = wc_get_order($orderId);
-      $order->add_order_note('Parcela de entrada paga.', true);
-      $order->payment_complete();
 
-      update_option('webhook_debug', $_GET);
+      // E = aprova o pedido
+      if($proposal->status === 'E') {
+        $order->update_status('completed', 'Parcela de entrada paga.');
+        $order->payment_complete();
+      }
+
+      // R e C = cancela o pedido
+      if(in_array($proposal->status, ['R', 'C'])) {
+        $order->update_status('canceled', 'Proposta cancelada.');
+      }
+
+      // P, N, A = status processando
+      if(in_array($proposal->status, ['P', 'N', 'A'])) {
+        $order->update_status('processing', 'Proposta em processamento.');
+      }
+
+      return $order;
     }
 
     private function getProductCategoriesByIDs(array $data): string {
