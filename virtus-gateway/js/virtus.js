@@ -1,7 +1,7 @@
 const v = jQuery.noConflict();
 ;(() => {
   v(document).ready(document => {
-    v('#billing_income').mask('#0.00', {reverse: true});
+    v('#billing_income').mask('#0,00', {reverse: true});
     v('#billing_cpf').mask('000.000.000-00');
     v('#billing_postcode').mask('00000-000', {
       onComplete: cep => {
