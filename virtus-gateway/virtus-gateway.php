@@ -231,24 +231,24 @@ function virtusPaymentGateInit(): void {
     }
 
     public function virtusCallback() {
-        extract($_POST);
+      $virtus = json_decode(file_get_contents('php://input'), true);
 
-        $virtusProposal = new Fetch($this->authToken);
-        $virtusProposal->get($this->remoteApiUrl."/v1/order/{$transaction}");
-        $proposal = $virtusProposal->response();
+      if(!isset($virtus->transaction)) throw new \Exception('Não foi recebido o identificador da transação.', true);
+      $virtusProposal = new Fetch($this->authToken);
+      $virtusProposal->get($this->remoteApiUrl."/v1/order/{$virtus->transaction}");
+      $proposal = $virtusProposal->response();
 
-        if(isset($proposal->detail)) throw new \Exception($proposal->detail, true);
-        if(is_array($proposal) && isset($proposal[0]['status']) && $proposal[0]['status'] !== "E") {
-          throw new \Exception($proposal, true);
-        }
+      if(isset($proposal->detail)) throw new \Exception($proposal->detail, true);
+      if(is_array($proposal) && isset($proposal->status) && $proposal->status !== "E") {
+        throw new \Exception($proposal, true);
+      }
 
-        $orderId = $this->orderEntropyReverse($proposal[0]['order_ref']);
+      $orderId = $this->orderEntropyReverse($proposal->order_ref);
+      $order = wc_get_order($orderId);
+      $order->add_order_note('Parcela de entrada paga.', true);
+      $order->payment_complete();
 
-        $order = wc_get_order($orderId);
-        $order->add_order_note('Parcela de entrada paga.', true);
-        $order->payment_complete();
-
-        update_option('webhook_debug', $_GET);
+      update_option('webhook_debug', $_GET);
     }
 
     private function getProductCategoriesByIDs(array $data): string {
@@ -283,7 +283,7 @@ function virtusPaymentGateInit(): void {
       $costumerId = $order->get_user_id();
       $orderId = $order->get_order_number();
       $cpf = isset($_POST['billing_cpf']) ? $_POST['billing_cpf'] : $_POST['billing_wooccm8'];
-      $income = isset($_POST['billing_income']) ? $_POST['billing_income'] : 1500.00;
+      $income = isset($_POST['billing_income']) ? $_POST['billing_income'] : "1500,00";
       $mainAddress = isset($_POST['billing_address_1'])? $_POST['billing_address_1'] : $_POST['billing_wooccm11'];
 
       $billing_address = [
