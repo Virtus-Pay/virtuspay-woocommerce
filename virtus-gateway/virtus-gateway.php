@@ -103,46 +103,62 @@ function virtusPaymentGateInit(): void {
       // End APIs Endpoints
 
       add_filter(
-        'woocommerce_billing_fields', 
-        [$this, 'custom_woocommerce_billing_fields'], 15);
+        'woocommerce_billing_fields',
+        [$this, 'custom_woocommerce_billing_fields'],
+        15
+      );
 
-      register_activation_hook(__FILE__, [$this, 'child_plugin_has_parent_plugin']);
+      // Begin JS Scripts
+      wp_enqueue_script(
+        'virtus-jquery-mask',
+        PLUGINURL.'/js/jquery.mask.min.js',
+        ['jquery']
+      );
+
+      wp_enqueue_script(
+        'virtus-library',
+        PLUGINURL.'/js/virtus.js',
+        ['virtus-jquery-mask']
+      );
+      // End JS Scripts
+
+      // register_activation_hook(__FILE__, [$this, 'child_plugin_has_parent_plugin']);
     }
 
-    public function child_plugin_has_parent_plugin() {
-      $plugin_slug = 'woocommerce-extra-checkout-fields-for-brazil';
-			if(
-        is_admin() &&
-        current_user_can('activate_plugins') &&
-        !is_plugin_active($plugin_slug.'/'.$plugin_slug.'.php')
-      ) {
-        if(current_user_can('install_plugins')) {
-        	$url = wp_nonce_url(
-            self_admin_url(
-              'update.php?action=install-plugin&plugin='.$plugin_slug
-            ),
-            'install-plugin_'.$plugin_slug
-          );
-        }
-        else $url = 'http://wordpress.org/plugins/'.$plugin_slug;
-
-        echo '
-          <div class="error">
-          	<p>
-              <strong>'.$this->title.' foi desabilitado</strong>: <br />
-              Esta extensão para pagamentos depende de um plugin para gerenciamento de campos para pagamentos que pode ser encontrado <a href="'.$url.'">aqui</a>.
-            </p>
-            <p>
-              Após a instalação desta dependência, tente habilitar o plugin '.$this->title.' novamente.
-            </p>
-          </div>
-        ';
-
-				deactivate_plugins(plugin_basename( __FILE__ ));
-
-        if(isset($_GET['activate'])) unset($_GET['activate']);
-			}
-		}
+    // public function child_plugin_has_parent_plugin() {
+    //   $plugin_slug = 'woocommerce-extra-checkout-fields-for-brazil';
+		// 	if(
+    //     is_admin() &&
+    //     current_user_can('activate_plugins') &&
+    //     !is_plugin_active($plugin_slug.'/'.$plugin_slug.'.php')
+    //   ) {
+    //     if(current_user_can('install_plugins')) {
+    //     	$url = wp_nonce_url(
+    //         self_admin_url(
+    //           'update.php?action=install-plugin&plugin='.$plugin_slug
+    //         ),
+    //         'install-plugin_'.$plugin_slug
+    //       );
+    //     }
+    //     else $url = 'http://wordpress.org/plugins/'.$plugin_slug;
+    //
+    //     echo '
+    //       <div class="error">
+    //       	<p>
+    //           <strong>'.$this->title.' foi desabilitado</strong>: <br />
+    //           Esta extensão para pagamentos depende de um plugin para gerenciamento de campos para pagamentos que pode ser encontrado <a href="'.$url.'">aqui</a>.
+    //         </p>
+    //         <p>
+    //           Após a instalação desta dependência, tente habilitar o plugin '.$this->title.' novamente.
+    //         </p>
+    //       </div>
+    //     ';
+    //
+		// 		deactivate_plugins(plugin_basename( __FILE__ ));
+    //
+    //     if(isset($_GET['activate'])) unset($_GET['activate']);
+		// 	}
+		// }
 
     public function virtusGetInstallments(): string {
       return '';
@@ -267,12 +283,7 @@ function virtusPaymentGateInit(): void {
       $income = isset($_POST['billing_income']) ? $_POST['billing_income'] : 1500.00;
       $mainAddress = isset($_POST['billing_address_1'])? $_POST['billing_address_1'] : $_POST['billing_wooccm11'];
 
-      preg_match_all('/([^,])([0-9a-zA-Z\-\ \/]+)$/', $mainAddress, $addressEmulateMatch);
-      $tryReadNumber = trim(array_shift(end($addressEmulateMatch)));
-      $maybeIsANumberFromAddress = !empty($tryReadNumber) ? $tryReadNumber : 'S/N';
-
       $billing_address = [
-        // 'street' => str_replace($maybeIsANumberFromAddress, '', str_replace(', ', '', $mainAddress)),
         'street' => $mainAddress,
         'number' => isset($_POST['billing_number']) ? $_POST['billing_number'] : $maybeIsANumberFromAddress,
         'complement' => isset($_POST['billing_address_2']) ? $_POST['billing_address_2'] : $_POST['billing_wooccm10'],
@@ -321,8 +332,29 @@ function virtusPaymentGateInit(): void {
       $virtusProposal->post($this->remoteApiUrl.'/v1/order', $data);
       $proposal = $virtusProposal->response();
 
-      if(isset($proposal->detail)) {
-        wc_add_notice($proposal->detail, 'error');
+      if(isset($proposal->detail)) wc_add_notice($proposal->detail, 'error');
+      else if(!isset($proposal->transaction)) {
+        $grandpa = (array)$proposal;
+        foreach($grandpa as $grandpaHead => $grandpaBody) {
+          $notice = '';
+
+          if(is_object($grandpaBody)) $grandpaBody = (array)$grandpaBody;
+          if(!is_array($grandpaBody)) $notice = "({$grandpaHead}) {$grandpaBody}";
+          else {
+            foreach($grandpaBody as $fatherHead => $fatherBody) {
+              if(is_object($fatherBody)) $fatherBody = (array)$fatherBody;
+              if(!is_array($fatherBody)) $notice = "({$grandpaHead})[{$fatherHead}] {$fatherBody}";
+              else {
+                foreach($fatherBody as $children) $notice = "({$grandpaHead})[{$fatherHead}] {$children}";
+              }
+            }
+          }
+
+          if(!empty($notice)) {
+            wc_add_notice($notice, 'error');
+            $notice = '';
+          }
+        }
       }
       else {
         //Adicionando notas para exibição no painel da order
@@ -342,24 +374,30 @@ function virtusPaymentGateInit(): void {
       }
     }
 
-    function custom_woocommerce_billing_fields($fields)
-		{
-			$new_fields = $fields;
+    function custom_woocommerce_billing_fields(array $fields): array {
 			$customer = WC()->session->get('customer');
       $data = WC()->session->get('custom_data');
-      $new_fields['billing_income'] = array(
-        'label'    => __( 'Renda', 'custom-woocommerce-billing-fields' ),
-        'class'    => array( 'form-row-last', 'income-field' ),
+
+      $fields['billing_income'] = [
+        'label'    => 'Renda',
+        'class'    => [
+          'form-row-last',
+          'income-field'
+        ],
         'required' => true,
         'type'     => 'tel',
         'clear'    => true,
         'priority' => 24,
-      );
-      $new_fields['billing_cpf']['class'] = array( 'form-row-first', 'person-type-field' );
-      $new_fields['billing_neighborhood']['required']	= true;
-      $new_fields['shipping_neighborhood']['required']	= true;
-      $new_fields['billing_cellphone']['required']	= true;
-      return apply_filters( 'wcbcf_billing_fields', $new_fields );
+      ];
+      $fields['billing_cpf']['class'] = [
+        'form-row-first',
+        'person-type-field',
+        'cpf'
+      ];
+      $fields['billing_neighborhood']['required']	= true;
+      $fields['billing_cellphone']['required']	= true;
+
+      return $fields;
 		}
   }
 }
