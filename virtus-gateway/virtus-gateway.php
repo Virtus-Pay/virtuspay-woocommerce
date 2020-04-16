@@ -108,8 +108,8 @@ function virtusPaymentGateInit(): void {
         15
       );
 
-      add_action( 
-        'woocommerce_update_options_payment_gateways_' . $this->id, 
+      add_action(
+        'woocommerce_update_options_payment_gateways_' . $this->id,
         array( $this, 'process_admin_options' ) );
 
       // Begin JS Scripts
@@ -231,7 +231,6 @@ function virtusPaymentGateInit(): void {
     }
 
     public function virtusCallback() {
-        // debug($_POST, true);
         extract($_POST);
 
         $virtusProposal = new Fetch($this->authToken);
@@ -298,11 +297,7 @@ function virtusPaymentGateInit(): void {
       ];
 
       $shipping_address = $billing_address;
-
-      //Define a URL de callback com base na url sendo acessada atualmente
-      //ToDo:: Checar necessidade de mudança
       $callback = home_url("/wc-api/{$this->id}");
-
       $costumerName = $order->get_billing_first_name()." ".$order->get_billing_last_name();
       $costumerEmail = $order->get_billing_email();
       $costumerPhone = isset($_POST['billing_cellphone']) ? $_POST['billing_cellphone'] : $_POST['billing_phone'];
