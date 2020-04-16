@@ -222,6 +222,39 @@ function virtusPaymentGateInit(): void {
       ];
     }
 
+    /*
+    //ToDo:: Implementar WS pra mascarar o Token Virtus 
+    public function payment_fields(): void {
+      if($this->description) {
+        // if ($this->isTestMode) {
+        //   $this->description = <<<DESCRIPTION
+        //     <b>!!! {$this->title} EM MODO DE TESTES !!!</b>
+        //   DESCRIPTION;
+        // }
+
+        echo wpautop(wp_kses_post($this->description));
+      }
+
+      $response = <<<FORM
+      </br>
+        <div class="woocommerce-billing-fields">
+          <div class="form-row form-row-wide">
+          <label for="installment" id="label-installment">Parcelamento: </label>
+            <select class="form-control form-control-cadastro px-1 px-md-2 data-hj-whitelist"
+              name="installment" id="installment" required onchange="validaParcelas();">
+              <option disabled="disabled" selected="selected">Selecione a quantidade de parcelas</option>
+              <option value="2">2x (1º: 257,22 + 1x 257,22) Total: 514,44</option>
+              <option value="3">3x (1º: 176,39 + 2x 176,39) Total: 529,17</option>
+            </select>
+          </div>
+        </div>
+        
+      FORM;
+
+      echo $response;
+    }
+    */
+
     private function orderEntropyConcat(string $orderID): string {
       return $orderID.'.'.time();
     }
