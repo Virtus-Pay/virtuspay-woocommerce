@@ -3,14 +3,23 @@ const v = jQuery.noConflict();
   v(document).ready(document => {
     v('#billing_income')
       .attr({
-        min: 1500.00,
-        max: 30000.00,
+        min: '1500,00',
+        max: '30000,00',
         required: true,
         maxlength: 10
       })
       .mask('#0,00', {reverse: true});
 
     v('#billing_cpf').mask('000.000.000-00');
+    v('#billing_birthdate')
+      .attr({
+        pattern: "[0-9]{2}\/[0-9]{2}\/[0-9]{4}",
+        min: 10,
+        max: 10
+      })
+      .mask('00/00/0000', {
+        placeholder: '00/00/0000'
+      });
 
     v('#billing_postcode').mask('00000-000', {
       onComplete: cep => {
