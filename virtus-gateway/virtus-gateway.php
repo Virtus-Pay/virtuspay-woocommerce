@@ -201,8 +201,8 @@ function virtusPaymentGateInit(): void {
           'desc_tip' => true
         ],
         'test_auth_token' => [
-          'title' => 'TOKEN para ambientes de testes / homologação',
-          'description' => 'Autenticação de acesso para a API de dados em ambiente de testes / homologação.',
+          'title' => 'Credencial / Homologação',
+          'description' => 'Token de acesso a API do ambiente de testes/homologação.',
           'type' => 'text',
           'required' =>  true,
           'default' => $this->authTestToken,
@@ -211,8 +211,8 @@ function virtusPaymentGateInit(): void {
           'desc_tip' => true
         ],
         'auth_token' => [
-          'title' => 'TOKEN para ambientes de produção / publicação',
-          'description' => 'Autenticação de acesso para a API de dados em ambiente de produção / publicação.',
+          'title' => 'Credencial / Produção',
+          'description' => 'Token de acesso a API do ambiente de produção/publicação.',
           'type' => 'text',
           'default' => $this->authProdToken,
           'name' => 'auth_token',
