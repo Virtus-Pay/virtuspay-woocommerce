@@ -3,13 +3,15 @@
 Plugin Name: WooCommerce VirtusPay
 Plugin URI: https://usevirtus.com.br
 Description: Pagamentos para o WooCommerce através da VirtusPay.
-Version: 1.1
+Version: 1.0
 Author: VirtusPay Dev Team
 Author URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
 */
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/helpers.class.php';
 require_once __DIR__.'/fetch.class.php';
+
+require_once __DIR__.'/installments.api.php';
 
 add_action('plugins_loaded', 'virtusPaymentGateInit', 0);
 function virtusPaymentGateInit(): void {
@@ -68,6 +70,7 @@ function virtusPaymentGateInit(): void {
     private $authProdToken;
     private $authToken;
     private $remoteApiUrl;
+    private $currentAmount;
 
     public function __construct() {
       global $woocommerce;
@@ -95,11 +98,6 @@ function virtusPaymentGateInit(): void {
         "woocommerce_api_{$this->id}",
         [$this, 'virtusCallback']
       );
-
-      add_action(
-        "woocommerce_api_{$this->id}_installments",
-        [$this, 'virtusGetInstallments']
-      );
       // End APIs Endpoints
 
       add_filter(
@@ -110,7 +108,21 @@ function virtusPaymentGateInit(): void {
 
       add_action(
         'woocommerce_update_options_payment_gateways_' . $this->id,
-        array( $this, 'process_admin_options' ) );
+        [$this, 'process_admin_options']
+      );
+
+      // Begin CSS Custom
+      wp_enqueue_style(
+        'psiCustomBootstrap',
+        PLUGINURL.'/css/bootstrap.css'
+      );
+
+      wp_enqueue_style(
+        'psiCustomBootstrapTheme',
+        PLUGINURL.'/css/bootstrap-theme.min.css',
+        ['psiCustomBootstrap']
+      );
+      // End CSS Custom
 
       // Begin JS Scripts
       wp_enqueue_script(
@@ -127,6 +139,13 @@ function virtusPaymentGateInit(): void {
       // End JS Scripts
 
       // register_activation_hook(__FILE__, [$this, 'child_plugin_has_parent_plugin']);
+
+      global $woocommerce;
+      $currentCartString = $woocommerce->cart->get_cart_total();
+
+      preg_match_all('/[0-9]+/', $currentCartString, $cartNumbersOnly);
+      $currentCartCents = array_slice($cartNumbersOnly[0], -2);
+      $this->currentAmount = implode('.', $currentCartCents);
     }
 
     // public function child_plugin_has_parent_plugin() {
@@ -163,10 +182,6 @@ function virtusPaymentGateInit(): void {
     //     if(isset($_GET['activate'])) unset($_GET['activate']);
 		// 	}
 		// }
-
-    public function virtusGetInstallments(): string {
-      return '';
-    }
 
     public function init_form_fields(): void {
       $this->form_fields = [
@@ -222,38 +237,40 @@ function virtusPaymentGateInit(): void {
       ];
     }
 
-    /*
-    //ToDo:: Implementar WS pra mascarar o Token Virtus 
     public function payment_fields(): void {
       if($this->description) {
-        // if ($this->isTestMode) {
-        //   $this->description = <<<DESCRIPTION
-        //     <b>!!! {$this->title} EM MODO DE TESTES !!!</b>
-        //   DESCRIPTION;
-        // }
+        if ($this->isTestMode) {
+          $this->description = '
+            <b>!!! '.$this->title.' EM MODO DE TESTES !!!</b>
+          ';
+        }
 
         echo wpautop(wp_kses_post($this->description));
       }
 
-      $response = <<<FORM
-      </br>
-        <div class="woocommerce-billing-fields">
-          <div class="form-row form-row-wide">
-          <label for="installment" id="label-installment">Parcelamento: </label>
-            <select class="form-control form-control-cadastro px-1 px-md-2 data-hj-whitelist"
-              name="installment" id="installment" required onchange="validaParcelas();">
-              <option disabled="disabled" selected="selected">Selecione a quantidade de parcelas</option>
-              <option value="2">2x (1º: 257,22 + 1x 257,22) Total: 514,44</option>
-              <option value="3">3x (1º: 176,39 + 2x 176,39) Total: 529,17</option>
-            </select>
-          </div>
-        </div>
-        
-      FORM;
+      $response = '
+        <table
+          class="table table-striped"
+          id="virtusInstallmentsList"
+          data-amount="'.$this->currentAmount.'">
+          <thead>
+            <tr>
+              <th>Parcelas</th>
+              <th>Entrada</th>
+              <th>Restante</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="4">Carregando parcelas...</td>
+            </tr>
+          </tbody>
+        </table>
+      ';
 
       echo $response;
     }
-    */
 
     private function orderEntropyConcat(string $orderID): string {
       return $orderID.'.'.time();
@@ -421,19 +438,8 @@ function virtusPaymentGateInit(): void {
 			$customer = WC()->session->get('customer');
       $data = WC()->session->get('custom_data');
 
-      $fields['billing_income'] = [
-        'label'    => 'Renda',
-        'class'    => [
-          'form-row-last',
-          'income-field'
-        ],
-        'required' => true,
-        'type'     => 'tel',
-        'clear'    => true,
-        'priority' => 24,
-      ];
       $fields['billing_cpf']['class'] = [
-        'form-row-first',
+        'form-row-wide',
         'person-type-field',
         'cpf'
       ];
