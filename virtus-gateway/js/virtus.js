@@ -1,35 +1,5 @@
 const v = jQuery.noConflict();
 ;(() => {
-  const getInstallments = () => {
-    let data = {
-          total_amount: v('#virtusInstallmentsList').data('amount'),
-          cpf: v('#billing_cpf').val()
-        }
-
-    v.post(`/wp-json/virtuspay/v1.0/installments`, data, response => {
-      let {installments, details} = response;
-      if(installments.length) {
-        v('#virtusInstallmentsList > tbody > tr:first-child').toggle();
-
-        for(let item of installments) {
-          v('#virtusInstallmentsList > tbody').append(`
-            <tr>
-              <td>${item.parcelas}</td>
-              <td>R$ ${item.entrada}</td>
-              <td>R$ ${item.restante}</td>
-              <td>R$ ${item.total}</td>
-            </tr>
-            `);
-        }
-      }
-    });
-  };
-
-  const radioVirtusPaymentCheckout = '#payment_method_virtuspay';
-  v(document).on('change', radioVirtusPaymentCheckout, () => {
-    if(v(radioVirtusPaymentCheckout).is(':checked')) getInstallments();
-  });
-
   v(document).ready(() => {
     v('#billing_income')
       .attr({
