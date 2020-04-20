@@ -118,7 +118,7 @@ function virtusPaymentGateInit(): void {
       );
 
       wp_enqueue_style(
-        'psiCustomBootstrapTheme',
+        'bootstrapTheme',
         PLUGINURL.'/css/bootstrap-theme.min.css',
         ['psiCustomBootstrap']
       );
@@ -249,24 +249,15 @@ function virtusPaymentGateInit(): void {
       }
 
       $response = '
-        <table
-          class="table table-striped"
-          id="virtusInstallmentsList"
-          data-amount="'.$this->currentAmount.'">
-          <thead>
-            <tr>
-              <th>Parcelas</th>
-              <th>Entrada</th>
-              <th>Restante</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td colspan="4">Carregando parcelas...</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="form-group">
+          <select
+            class="form-control"
+            name="billing_installment"
+            id="billing_installment"
+            data-amount="'.$this->currentAmount.'">
+            <option selected disabled>Carregando...</option>
+          </select>
+        </div>
       ';
 
       echo $response;

@@ -40,7 +40,18 @@ function virtusInstallmentsEndpoint() {
 
     $request = new Fetch($authToken);
     $request->post($endpoint.'/v2/installments', $_POST);
+    $response = $request->response();
 
-    return $request->response();
+    $installments = array_map('virtusInstallmentsNumberFormat', $response->installments);
+    $response->installments = $installments;
+
+    return $response;
   }
+}
+
+function virtusInstallmentsNumberFormat($item) {
+  $item->entrada = number_format($item->entrada, 2, '.', ' ');
+  $item->restante = number_format($item->restante, 2, '.', ' ');
+  $item->parcela = number_format($item->parcela, 2, '.', ' ');
+  return $item;
 }

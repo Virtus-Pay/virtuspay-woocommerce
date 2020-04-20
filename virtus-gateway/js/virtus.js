@@ -2,25 +2,39 @@ const v = jQuery.noConflict();
 ;(() => {
   const getInstallments = () => {
     let data = {
-          total_amount: v('#virtusInstallmentsList').data('amount'),
+          total_amount: v('#billing_installment').data('amount'),
           cpf: v('#billing_cpf').val()
         }
 
     v.post(`/wp-json/virtuspay/v1.0/installments`, data, response => {
-      let {installments, details} = response;
+      let {installments, details} = response,
+          template;
+
       if(installments.length) {
-        v('#virtusInstallmentsList > tbody > tr:first-child').toggle();
+        v('#billing_installment > option:first-child').toggle();
 
         for(let item of installments) {
-          v('#virtusInstallmentsList > tbody').append(`
-            <tr>
-              <td>${item.parcelas}</td>
-              <td>R$ ${item.entrada}</td>
-              <td>R$ ${item.restante}</td>
-              <td>R$ ${item.total}</td>
-            </tr>
-            `);
+          if(parseInt(item.parcelas) === 1) {
+            template = `
+              <option value="${item.parcelas}">
+                À vista: R$ ${item.total}
+              </option>
+              `;
+          }
+          else {
+            template = `
+              <option value="${item.parcelas}">
+                ${item.parcelas}x
+                (Entrada: R$ ${item.entrada} + R$ ${parseInt(item.parcelas-1)}x R$ ${item.restante})
+                Total: R$ ${item.total}
+              </option>
+              `;
+          }
+
+          v('#billing_installment').append(template);
         }
+        
+        v('#billing_installment > option').get(0).remove();
       }
     });
   };
