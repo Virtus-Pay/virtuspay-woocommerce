@@ -1,12 +1,14 @@
 const v = jQuery.noConflict();
 ;(() => {
   const getInstallments = () => {
+    v('#billing_installment').html(`<option selected disabled>Carregando...</option>`);
+
     let data = {
           total_amount: v('#billing_installment').data('amount'),
           cpf: v('#billing_cpf').val()
         }
 
-    v.post(`/wp-json/virtuspay/v1.0/installments`, data, response => {
+    v.post(`/wp-json/virtuspay/v1.0.3/installments`, data, response => {
       let {installments, details} = response,
           template;
 
@@ -33,7 +35,7 @@ const v = jQuery.noConflict();
 
           v('#billing_installment').append(template);
         }
-        
+
         v('#billing_installment > option').get(0).remove();
       }
     });
@@ -45,6 +47,8 @@ const v = jQuery.noConflict();
   });
 
   v(document).ready(() => {
+    if(v(radioVirtusPaymentCheckout).is(':checked')) getInstallments();
+
     v('#billing_income')
       .attr({
         min: '1500,00',

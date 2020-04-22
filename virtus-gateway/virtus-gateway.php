@@ -4,10 +4,10 @@
 */
 
 /*
-  Plugin Name: WooCommerce VirtusPay
+  Plugin Name: VirtusPay Boleto Parcelado
   Plugin URI: https://usevirtus.com.br
   Description: Pagamentos para o WooCommerce de boletos parcelados através da VirtusPay.
-  Version: 1.0.2
+  Version: 1.0.3
   Author: VirtusPay Dev Team
   Author URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
 */
@@ -117,14 +117,8 @@ function virtusPaymentGateInit(): void {
 
       // Begin CSS Custom
       wp_enqueue_style(
-        'psiCustomBootstrap',
-        PLUGINURL.'/css/bootstrap.css'
-      );
-
-      wp_enqueue_style(
-        'bootstrapTheme',
-        PLUGINURL.'/css/bootstrap-theme.min.css',
-        ['psiCustomBootstrap']
+        'psiCustomStyles',
+        PLUGINURL.'/css/virtus.css'
       );
       // End CSS Custom
 
@@ -377,7 +371,7 @@ function virtusPaymentGateInit(): void {
         "customer" => $customer,
         "delivery_address" => $shipping_address,
         "total_amount" => $amount,
-        "installment" => 3,
+        "installment" => isset($_POST['billing_installment']) ? $_POST['billing_installment'] : 3,
         "description" => implode('; ', $description),
         "callback" => $callback,
         "return_url" => $this->return_url,

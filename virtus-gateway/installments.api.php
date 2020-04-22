@@ -50,8 +50,10 @@ function virtusInstallmentsEndpoint() {
 }
 
 function virtusInstallmentsNumberFormat($item) {
+  $item->total = number_format($item->total, 2, '.', ' ');
   $item->entrada = number_format($item->entrada, 2, '.', ' ');
   $item->restante = number_format($item->restante, 2, '.', ' ');
   $item->parcela = number_format($item->parcela, 2, '.', ' ');
+
   return $item;
 }
