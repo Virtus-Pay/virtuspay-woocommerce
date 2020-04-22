@@ -141,11 +141,13 @@ function virtusPaymentGateInit(): void {
       // register_activation_hook(__FILE__, [$this, 'child_plugin_has_parent_plugin']);
 
       global $woocommerce;
-      $currentCartString = $woocommerce->cart->get_cart_total();
+      if(!is_null($woocommerce) and !is_null($woocommerce->cart)) {
+        $currentCartString = $woocommerce->cart->get_cart_total();
 
-      preg_match_all('/[0-9]+/', $currentCartString, $cartNumbersOnly);
-      $currentCartCents = array_slice($cartNumbersOnly[0], -2);
-      $this->currentAmount = implode('.', $currentCartCents);
+        preg_match_all('/[0-9]+/', $currentCartString, $cartNumbersOnly);
+        $currentCartCents = array_slice($cartNumbersOnly[0], -2);
+        $this->currentAmount = implode('.', $currentCartCents);
+      }
     }
 
     // public function child_plugin_has_parent_plugin() {
