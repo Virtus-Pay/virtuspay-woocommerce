@@ -256,7 +256,8 @@ function virtusPaymentGateInit(): void {
             id="billing_installment"
             data-amount="'.$this->currentAmount.'">
             <option selected disabled>Carregando...</option>
-          </select>
+          </select><br />
+          <small id="interestAndCet"></small>
         </div>
       ';
 

@@ -9,8 +9,10 @@ const v = jQuery.noConflict();
         }
 
     v.post(`/wp-json/virtuspay/v1.0.3/installments`, data, response => {
-      let {installments, details} = response,
+      let {installments, ...details} = response,
           template;
+
+      v('#interestAndCet').html(`Juros de ${details.interest} a.m. CET máximo de ${details.cet}`);
 
       if(installments.length) {
         v('#billing_installment > option:first-child').toggle();
@@ -37,6 +39,7 @@ const v = jQuery.noConflict();
         }
 
         v('#billing_installment > option').get(0).remove();
+        v('#billing_installment').prepend(`<option selected disabled>Selecione a quantidade de parcelas</option>`);
       }
     });
   };
