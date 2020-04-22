@@ -1,11 +1,15 @@
 <?php
 /*
-Plugin Name: WooCommerce VirtusPay
-Plugin URI: https://usevirtus.com.br
-Description: Pagamentos para o WooCommerce através da VirtusPay.
-Version: 1.0
-Author: VirtusPay Dev Team
-Author URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
+  @package VirtusPay
+*/
+
+/*
+  Plugin Name: WooCommerce VirtusPay
+  Plugin URI: https://usevirtus.com.br
+  Description: Pagamentos para o WooCommerce através da VirtusPay.
+  Version: 1.0
+  Author: VirtusPay Dev Team
+  Author URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
 */
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/helpers.class.php';
