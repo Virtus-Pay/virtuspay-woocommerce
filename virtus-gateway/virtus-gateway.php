@@ -11,6 +11,8 @@ require_once __DIR__.'/settings.php';
 require_once __DIR__.'/helpers.class.php';
 require_once __DIR__.'/fetch.class.php';
 
+require_once __DIR__.'/installments.api.php';
+
 add_action('plugins_loaded', 'virtusPaymentGateInit', 0);
 function virtusPaymentGateInit(): void {
   add_filter('woocommerce_payment_gateways', 'addVirtusPaymentMethod');
@@ -68,7 +70,7 @@ function virtusPaymentGateInit(): void {
     private $authProdToken;
     private $authToken;
     private $remoteApiUrl;
-    private $currentAmount = '0.00';
+    private $currentAmount;
 
     public function __construct() {
       global $woocommerce;
@@ -109,6 +111,19 @@ function virtusPaymentGateInit(): void {
         [$this, 'process_admin_options']
       );
 
+      // Begin CSS Custom
+      wp_enqueue_style(
+        'psiCustomBootstrap',
+        PLUGINURL.'/css/bootstrap.css'
+      );
+
+      wp_enqueue_style(
+        'bootstrapTheme',
+        PLUGINURL.'/css/bootstrap-theme.min.css',
+        ['psiCustomBootstrap']
+      );
+      // End CSS Custom
+
       // Begin JS Scripts
       wp_enqueue_script(
         'virtus-jquery-mask',
@@ -124,6 +139,13 @@ function virtusPaymentGateInit(): void {
       // End JS Scripts
 
       // register_activation_hook(__FILE__, [$this, 'child_plugin_has_parent_plugin']);
+
+      global $woocommerce;
+      $currentCartString = $woocommerce->cart->get_cart_total();
+
+      preg_match_all('/[0-9]+/', $currentCartString, $cartNumbersOnly);
+      $currentCartCents = array_slice($cartNumbersOnly[0], -2);
+      $this->currentAmount = implode('.', $currentCartCents);
     }
 
     // public function child_plugin_has_parent_plugin() {
@@ -226,22 +248,19 @@ function virtusPaymentGateInit(): void {
         echo wpautop(wp_kses_post($this->description));
       }
 
-      // $response = '
-      //   <div class="input-group mb-3">
-      //     <div class="input-group-prepend">
-      //       <label class="input-group-text" for="inputGroupSelect01">Parcelas</label>
-      //     </div>
-      //     <select
-      //       class="custom-select"
-      //       name="billing_installment"
-      //       id="billing_installment"
-      //       data-amount="'.$this->currentAmount.'">
-      //       <option selected disabled>Carregando parcelas...</option>
-      //     </select>
-      //   </div>
-      // ';
-      //
-      // echo $response;
+      $response = '
+        <div class="form-group">
+          <select
+            class="form-control"
+            name="billing_installment"
+            id="billing_installment"
+            data-amount="'.$this->currentAmount.'">
+            <option selected disabled>Carregando...</option>
+          </select>
+        </div>
+      ';
+
+      echo $response;
     }
 
     private function orderEntropyConcat(string $orderID): string {

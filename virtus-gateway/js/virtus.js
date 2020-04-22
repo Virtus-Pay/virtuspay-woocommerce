@@ -1,5 +1,49 @@
 const v = jQuery.noConflict();
 ;(() => {
+  const getInstallments = () => {
+    let data = {
+          total_amount: v('#billing_installment').data('amount'),
+          cpf: v('#billing_cpf').val()
+        }
+
+    v.post(`/wp-json/virtuspay/v1.0/installments`, data, response => {
+      let {installments, details} = response,
+          template;
+
+      if(installments.length) {
+        v('#billing_installment > option:first-child').toggle();
+
+        for(let item of installments) {
+          if(parseInt(item.parcelas) === 1) {
+            template = `
+              <option value="${item.parcelas}">
+                À vista: R$ ${item.total}
+              </option>
+              `;
+          }
+          else {
+            template = `
+              <option value="${item.parcelas}">
+                ${item.parcelas}x
+                (Entrada: R$ ${item.entrada} + R$ ${parseInt(item.parcelas-1)}x R$ ${item.restante})
+                Total: R$ ${item.total}
+              </option>
+              `;
+          }
+
+          v('#billing_installment').append(template);
+        }
+        
+        v('#billing_installment > option').get(0).remove();
+      }
+    });
+  };
+
+  const radioVirtusPaymentCheckout = '#payment_method_virtuspay';
+  v(document).on('change', radioVirtusPaymentCheckout, () => {
+    if(v(radioVirtusPaymentCheckout).is(':checked')) getInstallments();
+  });
+
   v(document).ready(() => {
     v('#billing_income')
       .attr({
