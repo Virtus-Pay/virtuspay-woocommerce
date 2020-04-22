@@ -6,8 +6,8 @@
 /*
   Plugin Name: WooCommerce VirtusPay
   Plugin URI: https://usevirtus.com.br
-  Description: Pagamentos para o WooCommerce através da VirtusPay.
-  Version: 1.0
+  Description: Pagamentos para o WooCommerce de boletos parcelados através da VirtusPay.
+  Version: 1.0.2
   Author: VirtusPay Dev Team
   Author URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
 */
