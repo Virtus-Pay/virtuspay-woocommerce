@@ -316,6 +316,21 @@ function virtusPaymentGateInit(): void {
     }
 
     public function process_payment($order_id) {
+      $billing_cpf = sanitize_text_field($_POST['billing_cpf']);
+      $billing_income = sanitize_text_field($_POST['billing_income']);
+      $billing_address_1 = sanitize_text_field($_POST['billing_address_1']);
+      $billing_number = sanitize_text_field($_POST['billing_number']);
+      $billing_address_2 = sanitize_text_field($_POST['billing_address_2']);
+      $billing_neighborhood = sanitize_text_field($_POST['billing_neighborhood']);
+      $billing_cellphone = sanitize_text_field($_POST['billing_cellphone']);
+      $billing_birthdate = sanitize_text_field($_POST['billing_birthdate']);
+      $billing_installment = sanitize_text_field($_POST['billing_installment']);
+      $billing_wooccm8 = sanitize_text_field($_POST['billing_wooccm8']);
+      $billing_wooccm11 = sanitize_text_field($_POST['billing_wooccm11']);
+      $billing_wooccm10 = sanitize_text_field($_POST['billing_wooccm10']);
+      $billing_wooccm12 = sanitize_text_field($_POST['billing_wooccm12']);
+      $billing_phone = sanitize_text_field($_POST['billing_phone']);
+
       $cartItems = WC()->cart->get_cart();
       $description = [];
       $items = [];
@@ -335,15 +350,15 @@ function virtusPaymentGateInit(): void {
       $amount = $order->get_total();
       $costumerId = $order->get_user_id();
       $orderId = $order->get_order_number();
-      $cpf = isset($_POST['billing_cpf']) ? $_POST['billing_cpf'] : $_POST['billing_wooccm8'];
-      $income = isset($_POST['billing_income']) ? $_POST['billing_income'] : "1500,00";
-      $mainAddress = isset($_POST['billing_address_1'])? $_POST['billing_address_1'] : $_POST['billing_wooccm11'];
+      $cpf = !empty($billing_cpf) ? $billing_cpf : $billing_wooccm8;
+      $income = !empty($billing_income) ? $billing_income : "1500,00";
+      $mainAddress = !empty($billing_address_1) ? $billing_address_1 : $billing_wooccm11;
 
       $billing_address = [
         'street' => $mainAddress,
-        'number' => isset($_POST['billing_number']) ? $_POST['billing_number'] : $maybeIsANumberFromAddress,
-        'complement' => isset($_POST['billing_address_2']) ? $_POST['billing_address_2'] : $_POST['billing_wooccm10'],
-        'neighborhood' => isset($_POST['billing_neighborhood']) ? $_POST['billing_neighborhood'] : $_POST['billing_wooccm12'],
+        'number' => !empty($billing_number) ? $billing_number : $maybeIsANumberFromAddress,
+        'complement' => !empty($billing_address_2) ? $billing_address_2 : $billing_wooccm10,
+        'neighborhood' => !empty($billing_neighborhood) ? $billing_neighborhood : $billing_wooccm12,
         'city' => $order->get_billing_city(),
         'state' => $order->get_billing_state(),
         'cep' => $order->get_billing_postcode()
@@ -353,8 +368,8 @@ function virtusPaymentGateInit(): void {
       $callback = home_url("/wc-api/{$this->id}");
       $costumerName = $order->get_billing_first_name()." ".$order->get_billing_last_name();
       $costumerEmail = $order->get_billing_email();
-      $costumerPhone = isset($_POST['billing_cellphone']) ? $_POST['billing_cellphone'] : $_POST['billing_phone'];
-      $birthdate = isset($_POST['billing_birthdate']) ? $_POST['billing_birthdate'] : '01-01-1900';
+      $costumerPhone = !empty($billing_cellphone) ? $billing_cellphone : $billing_phone;
+      $birthdate = !empty($billing_birthdate) ? $billing_birthdate : '01-01-1900';
 
       $customer = [
         "full_name" => $costumerName,
@@ -372,7 +387,7 @@ function virtusPaymentGateInit(): void {
         "customer" => $customer,
         "delivery_address" => $shipping_address,
         "total_amount" => $amount,
-        "installment" => isset($_POST['billing_installment']) ? $_POST['billing_installment'] : 3,
+        "installment" => !empty($billing_installment) ? $billing_installment : 3,
         "description" => implode('; ', $description),
         "callback" => $callback,
         "return_url" => $this->return_url,
@@ -435,6 +450,7 @@ function virtusPaymentGateInit(): void {
         'person-type-field',
         'cpf'
       ];
+
       $fields['billing_neighborhood']['required']	= true;
       $fields['billing_cellphone']['required']	= true;
 

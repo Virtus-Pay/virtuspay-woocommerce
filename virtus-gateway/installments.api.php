@@ -42,6 +42,14 @@ function virtusInstallmentsEndpoint() {
     $request->post($endpoint.'/v2/installments', $_POST);
     $response = $request->response();
 
+    if(isset($response->error)) {
+      return new WP_Error(
+        'virtus_installments_endpoint_request',
+        $response->error,
+        ['status' => 400]
+      );
+    }
+
     $installments = array_map('virtusInstallmentsNumberFormat', $response->installments);
     $response->installments = $installments;
 

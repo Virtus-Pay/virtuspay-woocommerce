@@ -1,46 +1,41 @@
 <?php
-if(!function_exists('curl_init')) die('A biblioteca CURL é necessária para o funcionamento do plugin.');
 class Fetch {
-  private $curl;
   private $sentHeaders = [];
-  private $responseHeaders = '';
   private $response;
 
   public function __construct(string $token = '') {
-    $this->sentHeaders = [
-      'Content-Type: application/json'
-    ];
-
-    if(strlen($token)) array_push($this->sentHeaders, 'Authorization: Token '.$token);
-
-    $this->curl = curl_init();
-    curl_setopt($this->curl, CURLOPT_FOLLOWLOCATION, true);
-    curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($this->curl, CURLOPT_SSL_VERIFYHOST, false);
-    curl_setopt($this->curl, CURLOPT_SSL_VERIFYPEER, false);
+    $this->sentHeaders['Content-Type'] = 'application/json';
+    if(strlen($token)) $this->sentHeaders['Authorization'] = 'Token '.$token;
   }
 
   public function get(string $url): void {
-    curl_setopt($this->curl, CURLOPT_URL, $url);
-    curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->sentHeaders);
-    curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, "GET");
+    $request = wp_remote_get($url, [
+      'headers' => $this->sentHeaders
+    ]);
 
-    $this->response = curl_exec($this->curl);
+    if(is_wp_error($request)) {
+      $this->response = ['error' => $request->get_error_message()];
+    }
+    else $this->response = $request['body'];
   }
 
   public function post(string $url, array $data): void {
-    $data = json_encode($data);
-    array_push($this->sentHeaders, 'Content-Length: '.strlen($data));
+    $payload = json_encode($data);
+    $this->sentHeaders['Content-Length'] = strlen((string)$payload);
+    $request = wp_remote_post($url, [
+      'method' => 'POST',
+      'data_format' => 'body',
+      'headers' => $this->sentHeaders,
+      'body' => $payload
+    ]);
 
-    curl_setopt($this->curl, CURLOPT_URL, $url);
-    curl_setopt($this->curl, CURLOPT_HTTPHEADER, $this->sentHeaders);
-    curl_setopt($this->curl, CURLOPT_CUSTOMREQUEST, "POST");
-    curl_setopt($this->curl, CURLOPT_POSTFIELDS, $data);
-
-    $this->response = curl_exec($this->curl);
+    if(is_wp_error($request)) {
+      $this->response = ['error' => $request->get_error_message()];
+    }
+    else $this->response = $request['body'];
   }
 
   public function response() {
-    return json_decode(trim($this->response));
+    return json_decode($this->response);
   }
 }
