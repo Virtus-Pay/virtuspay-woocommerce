@@ -50,7 +50,11 @@ function virtusPaymentGateInit(): void {
 	}
 
   if(!class_exists('WC_Payment_Gateway'))
-    throw new \Exception('É necessária a instalação do Woocommerce', 0);
+    return new WP_Error(
+      'virtus_payment_gateway_undefined',
+      'É necessária a instalação do Woocommerce',
+      ['status' => 400]
+    );
 
   class WooCommerceVirtusPayment extends WC_Payment_Gateway {
     public $id = virtuspay_VIRTUSPAYMENTID;
@@ -236,13 +240,26 @@ function virtusPaymentGateInit(): void {
     public function virtusCallback() {
       $virtus = json_decode(file_get_contents('php://input'), true);
 
-      if(!isset($virtus['transaction'])) throw new \Exception('Não foi recebido o identificador da transação.', true);
+      if(!isset($virtus['transaction'])) {
+        return new WP_Error(
+          'virtus_unidentified_transaction',
+          'Não foi recebido o identificador da transação.',
+          ['status' => 400]
+        );
+      }
+
       $virtusProposal = new Fetch($this->authToken);
       $virtusProposal->get($this->remoteApiUrl."/v1/order/{$virtus['transaction']}");
       $proposalResponse = $virtusProposal->response();
       $proposal = array_shift($proposalResponse);
 
-      if(isset($proposal->detail)) throw new \Exception($proposal->detail, true);
+      if(isset($proposal->detail)) {
+        return new WP_Error(
+          'virtus_proposal_detail_error',
+          $proposal->detail,
+          ['status' => 400]
+        );
+      }
 
       $orderId = $this->orderEntropyReverse($proposal->order_ref);
       $order = wc_get_order($orderId);
