@@ -1,10 +1,10 @@
-=== VirtusPay Gateway ===
+=== VirtusPay Boleto Parcelado ===
 Contributors: paulosouzainfo
 Tags: woocommerce, gateway, payments, installment billet
 Requires at least: 5.1
 Tested up to: 5.0.8
-Stable tag: 1.0.3
 Requires PHP: 7.2
+Stable tag: 1.0.3
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,6 +112,10 @@ Autenticação de acesso para a API de dados em ambiente de produção / publica
 
 ![Pedido em processamento](https://ipfs.io/ipfs/Qmd9PopaEArk7c4ycaMZZk2ympEaa1qmBDzqSnUbjX6d8K?filename=Captura%20de%20tela%20de%202020-04-22%2012-26-29.png)
 
+== Sobre o plugin ==
+
+Este plugin para o WooCommerce permite a configuração e apresentação de um novo meio de pagamento para ser escolhido no momento do checkout e usa integrações externas para validação de dados e processamento de pedidos através de uma API sobre a responsabilidade da VirtusPay.
+
 == Changelog ==
 
 = 1.0.3 =
@@ -120,3 +124,5 @@ Autenticação de acesso para a API de dados em ambiente de produção / publica
 
 = 1.0.3 =
 * Selectbox para parcelas
+* Remapeamento de nomes de classes, métodos, funções e variáveis
+* Sanitização, escape e validação de dados de entrada
