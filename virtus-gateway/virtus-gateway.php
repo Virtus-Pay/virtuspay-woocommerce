@@ -18,7 +18,7 @@ require_once __DIR__.'/fetch.class.php';
 require_once __DIR__.'/installments.api.php';
 
 add_action('plugins_loaded', 'virtusPaymentGateInit', 0);
-function virtusPaymentGateInit(): void {
+function virtusPaymentGateInit() {
   add_filter('woocommerce_payment_gateways', 'addVirtusPaymentMethod');
   function addVirtusPaymentMethod(array $paymentMethods): array {
     array_push($paymentMethods, 'WooCommerceVirtusPayment');
@@ -212,7 +212,7 @@ function virtusPaymentGateInit(): void {
           ';
         }
 
-        echo wpautop(esc_html($this->description));
+        echo wpautop($this->description);
       }
 
       $response = '<div class="form-group">
@@ -226,7 +226,7 @@ function virtusPaymentGateInit(): void {
           <small id="interestAndCet"></small>
         </div>';
 
-      echo esc_html($response);
+      echo $response;
     }
 
     private function orderEntropyConcat(string $orderID): string {
