@@ -16,16 +16,16 @@ require_once __DIR__.'/fetch.class.php';
 
 require_once __DIR__.'/installments.api.php';
 
-add_action('plugins_loaded', 'virtusPaymentGateInit', 0);
-function virtusPaymentGateInit() {
-  add_filter('woocommerce_payment_gateways', 'addVirtusPaymentMethod');
-  function addVirtusPaymentMethod(array $paymentMethods): array {
-    array_push($paymentMethods, 'WooCommerceVirtusPayment');
+add_action('plugins_loaded', 'VirtusPayGatewayInit', 0);
+function VirtusPayGatewayInit() {
+  add_filter('woocommerce_payment_gateways', 'VirtusPayGatewayAddPaymentMethod');
+  function VirtusPayGatewayAddPaymentMethod(array $paymentMethods): array {
+    array_push($paymentMethods, 'VirtusPayGateway');
     return $paymentMethods;
   }
 
-  add_filter('plugin_action_links_virtus-gateway/virtus-gateway.php', 'addConfigLinkInPluginList');
-  function addConfigLinkInPluginList(array $links): array {
+  add_filter('plugin_action_links_virtus-gateway/virtus-gateway.php', 'VirtusPayGatewayAddConfigInPluginList');
+  function VirtusPayGatewayAddConfigInPluginList(array $links): array {
     $url = esc_url( add_query_arg(
       'page',
       'wc-settings&tab=checkout&section=virtuspay',
@@ -42,8 +42,8 @@ function virtusPaymentGateInit() {
     return $links;
   }
 
-  add_filter('woocommerce_payment_gateways', 'addGatewayNameForWooCommerce');
-	function addGatewayNameForWooCommerce(array $methods): array {
+  add_filter('woocommerce_payment_gateways', 'VirtusPayGatewayAddGatewayNameForWooCommerce');
+	function VirtusPayGatewayAddGatewayNameForWooCommerce(array $methods): array {
 		array_push($methods, virtuspay_TITLE);
 		return $methods;
 	}
@@ -55,7 +55,7 @@ function virtusPaymentGateInit() {
       ['status' => 400]
     );
 
-  class WooCommerceVirtusPayment extends WC_Payment_Gateway {
+  class VirtusPayGateway extends WC_Payment_Gateway {
     public $id = virtuspay_VIRTUSPAYMENTID;
     public $plugin_id = virtuspay_VIRTUSPAYMENTID;
     public $icon = virtuspay_ICON;
@@ -247,7 +247,7 @@ function virtusPaymentGateInit() {
         );
       }
 
-      $virtusProposal = new Fetch($this->authToken);
+      $virtusProposal = new VirtusPayGateway\Fetch($this->authToken);
       $virtusProposal->get($this->remoteApiUrl."/v1/order/{$virtus['transaction']}");
       $proposalResponse = $virtusProposal->response();
       $proposal = array_shift($proposalResponse);
@@ -372,7 +372,7 @@ function virtusPaymentGateInit() {
         "items" => $items
       ];
 
-      $virtusProposal = new Fetch($this->authToken);
+      $virtusProposal = new VirtusPayGateway\Fetch($this->authToken);
       $virtusProposal->post($this->remoteApiUrl.'/v1/order', $data);
       $proposal = $virtusProposal->response();
 

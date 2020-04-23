@@ -1,4 +1,5 @@
 <?php
+namespace VirtusPayGateway;
 class Helpers {
   public static function debug(array $data, bool $die = false): void {
     $template = '<pre>'.print_r($data, true).'</pre>';

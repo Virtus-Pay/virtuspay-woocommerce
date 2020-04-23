@@ -2,15 +2,15 @@
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/fetch.class.php';
 
-add_action('rest_api_init', 'virtusInstallmentsApiRegister');
-function virtusInstallmentsApiRegister() {
+add_action('rest_api_init', 'VirtusPayGatewayInstallmentsApiRegister');
+function VirtusPayGatewayInstallmentsApiRegister() {
   register_rest_route(virtuspay_VIRTUSPAYMENTID.'/'.virtuspay_VERSION, '/installments', [
     'methods' => 'POST',
-    'callback' => 'virtusInstallmentsEndpoint',
+    'callback' => 'VirtusPayInstallmentsWpEndpoint',
   ]);
 }
 
-function virtusInstallmentsEndpoint() {
+function VirtusPayInstallmentsWpEndpoint() {
   $virtusSettings = get_option(virtuspay_VIRTUSPAYMENTID.virtuspay_VIRTUSPAYMENTID.'_settings');
 
   if(is_array($virtusSettings)) {
@@ -38,7 +38,7 @@ function virtusInstallmentsEndpoint() {
       );
     }
 
-    $request = new Fetch($authToken);
+    $request = new VirtusPayGateway\Fetch($authToken);
     $request->post($endpoint.'/v2/installments', $_POST);
     $response = $request->response();
 
@@ -50,14 +50,14 @@ function virtusInstallmentsEndpoint() {
       );
     }
 
-    $installments = array_map('virtusInstallmentsNumberFormat', $response->installments);
+    $installments = array_map('VirtusPayGatewayInstallmentsNumberFormat', $response->installments);
     $response->installments = $installments;
 
     return $response;
   }
 }
 
-function virtusInstallmentsNumberFormat($item) {
+function VirtusPayGatewayInstallmentsNumberFormat($item) {
   $item->total = number_format($item->total, 2, ',', ' ');
   $item->entrada = number_format($item->entrada, 2, ',', ' ');
   $item->restante = number_format($item->restante, 2, ',', ' ');

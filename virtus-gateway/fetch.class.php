@@ -1,4 +1,5 @@
 <?php
+namespace VirtusPayGateway;
 class Fetch {
   private $sentHeaders = [];
   private $response;
