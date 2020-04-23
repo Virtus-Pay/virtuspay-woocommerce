@@ -45,7 +45,7 @@ function virtusPaymentGateInit(): void {
 
   add_filter('woocommerce_payment_gateways', 'addGatewayNameForWooCommerce');
 	function addGatewayNameForWooCommerce(array $methods): array {
-		array_push($methods, TITLE);
+		array_push($methods, virtuspay_TITLE);
 		return $methods;
 	}
 
@@ -53,17 +53,17 @@ function virtusPaymentGateInit(): void {
     throw new \Exception('É necessária a instalação do Woocommerce', 0);
 
   class WooCommerceVirtusPayment extends WC_Payment_Gateway {
-    public $id = VIRTUSPAYMENTID;
-    public $plugin_id = VIRTUSPAYMENTID;
-    public $icon = ICON;
+    public $id = virtuspay_VIRTUSPAYMENTID;
+    public $plugin_id = virtuspay_VIRTUSPAYMENTID;
+    public $icon = virtuspay_ICON;
     public $has_fields = true;
     public $supports = [];
 
     // config woocommerce/settings[/...]
-    public $method_title = TITLE;
-    public $method_description = DESCRIPTION;
-    public $title = TITLE;
-    public $description = DESCRIPTION;
+    public $method_title = virtuspay_TITLE;
+    public $method_description = virtuspay_DESCRIPTION;
+    public $title = virtuspay_TITLE;
+    public $description = virtuspay_DESCRIPTION;
 
     // defaults
     public $enabled = 'no';
@@ -91,7 +91,7 @@ function virtusPaymentGateInit(): void {
       $this->return_url = (strlen($this->get_option('return_url')) > 0)? $this->get_option('return_url') : wc_get_checkout_url();
       $this->testmode = $this->get_option('testmode');
       $this->isTestMode = 'yes' === $this->testmode;
-      $this->remoteApiUrl = $this->isTestMode ? TESTURL : PRODURL;
+      $this->remoteApiUrl = $this->isTestMode ? virtuspay_TESTURL : virtuspay_PRODURL;
 
       $this->authTestToken = $this->get_option('test_auth_token');
       $this->authProdToken = $this->get_option('auth_token');
@@ -118,25 +118,23 @@ function virtusPaymentGateInit(): void {
       // Begin CSS Custom
       wp_enqueue_style(
         'psiCustomStyles',
-        PLUGINURL.'/css/virtus.css'
+        virtuspay_PLUGINURL.'/css/virtus.css'
       );
       // End CSS Custom
 
       // Begin JS Scripts
       wp_enqueue_script(
         'virtus-jquery-mask',
-        PLUGINURL.'/js/jquery.mask.min.js',
+        virtuspay_PLUGINURL.'/js/jquery.mask.min.js',
         ['jquery']
       );
 
       wp_enqueue_script(
         'virtus-library',
-        PLUGINURL.'/js/virtus.js',
+        virtuspay_PLUGINURL.'/js/virtus.js',
         ['virtus-jquery-mask']
       );
       // End JS Scripts
-
-      // register_activation_hook(__FILE__, [$this, 'child_plugin_has_parent_plugin']);
 
       global $woocommerce;
       if(!is_null($woocommerce) and !is_null($woocommerce->cart)) {
@@ -148,46 +146,11 @@ function virtusPaymentGateInit(): void {
       }
     }
 
-    // public function child_plugin_has_parent_plugin() {
-    //   $plugin_slug = 'woocommerce-extra-checkout-fields-for-brazil';
-		// 	if(
-    //     is_admin() &&
-    //     current_user_can('activate_plugins') &&
-    //     !is_plugin_active($plugin_slug.'/'.$plugin_slug.'.php')
-    //   ) {
-    //     if(current_user_can('install_plugins')) {
-    //     	$url = wp_nonce_url(
-    //         self_admin_url(
-    //           'update.php?action=install-plugin&plugin='.$plugin_slug
-    //         ),
-    //         'install-plugin_'.$plugin_slug
-    //       );
-    //     }
-    //     else $url = 'http://wordpress.org/plugins/'.$plugin_slug;
-    //
-    //     echo '
-    //       <div class="error">
-    //       	<p>
-    //           <strong>'.$this->title.' foi desabilitado</strong>: <br />
-    //           Esta extensão para pagamentos depende de um plugin para gerenciamento de campos para pagamentos que pode ser encontrado <a href="'.$url.'">aqui</a>.
-    //         </p>
-    //         <p>
-    //           Após a instalação desta dependência, tente habilitar o plugin '.$this->title.' novamente.
-    //         </p>
-    //       </div>
-    //     ';
-    //
-		// 		deactivate_plugins(plugin_basename( __FILE__ ));
-    //
-    //     if(isset($_GET['activate'])) unset($_GET['activate']);
-		// 	}
-		// }
-
     public function init_form_fields(): void {
       $this->form_fields = [
         'enabled' => [
           'title' => 'Ativação',
-          'label' => 'Ativar '.TITLE.'?',
+          'label' => 'Ativar '.virtuspay_TITLE.'?',
           'type'  => 'checkbox',
           'description' => 'A ativação ou desativação de pagamentos influenciará na tomada de decisão do seu comprador.',
           'default' => $this->enabled,
@@ -197,7 +160,7 @@ function virtusPaymentGateInit(): void {
         ],
         'testmode' => [
           'title' => 'Modo de testes',
-          'label' => 'Ativar '.TITLE.' em modo de testes?',
+          'label' => 'Ativar '.virtuspay_TITLE.' em modo de testes?',
           'type' => 'checkbox',
           'description' => 'Ativar o modo de testes permite que você possa homologar os seus pagamentos fora do seu ambiente de produção.',
           'default' => $this->testmode,
@@ -245,23 +208,21 @@ function virtusPaymentGateInit(): void {
           ';
         }
 
-        echo wpautop(wp_kses_post($this->description));
+        echo wpautop(esc_html($this->description));
       }
 
-      $response = '
-        <div class="form-group">
+      $response = '<div class="form-group">
           <select
             class="form-control"
             name="billing_installment"
             id="billing_installment"
-            data-amount="'.$this->currentAmount.'">
+            data-amount="'.esc_attr($this->currentAmount).'">
             <option selected disabled>Carregando...</option>
           </select><br />
           <small id="interestAndCet"></small>
-        </div>
-      ';
+        </div>';
 
-      echo $response;
+      echo esc_html($response);
     }
 
     private function orderEntropyConcat(string $orderID): string {

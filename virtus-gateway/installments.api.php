@@ -4,14 +4,14 @@ require_once __DIR__.'/fetch.class.php';
 
 add_action('rest_api_init', 'virtusInstallmentsApiRegister');
 function virtusInstallmentsApiRegister() {
-  register_rest_route(VIRTUSPAYMENTID.'/'.VERSION, '/installments', [
+  register_rest_route(virtuspay_VIRTUSPAYMENTID.'/'.virtuspay_VERSION, '/installments', [
     'methods' => 'POST',
     'callback' => 'virtusInstallmentsEndpoint',
   ]);
 }
 
 function virtusInstallmentsEndpoint() {
-  $virtusSettings = get_option(VIRTUSPAYMENTID.VIRTUSPAYMENTID.'_settings');
+  $virtusSettings = get_option(virtuspay_VIRTUSPAYMENTID.virtuspay_VIRTUSPAYMENTID.'_settings');
 
   if(is_array($virtusSettings)) {
     extract($virtusSettings);
@@ -20,7 +20,7 @@ function virtusInstallmentsEndpoint() {
 
     $isTestMode = 'yes' === $testmode;
     $authToken = $isTestMode ? $test_auth_token : $auth_token;
-    $endpoint = $isTestMode ? TESTURL : PRODURL;
+    $endpoint = $isTestMode ? virtuspay_TESTURL : virtuspay_PRODURL;
 
     if(empty($authToken)) {
       return new WP_Error(
