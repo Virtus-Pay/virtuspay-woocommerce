@@ -13,7 +13,6 @@
 require_once __DIR__.'/settings.php';
 require_once __DIR__.'/helpers.class.php';
 require_once __DIR__.'/fetch.class.php';
-
 require_once __DIR__.'/installments.api.php';
 
 add_action('plugins_loaded', 'VirtusPayGatewayInit', 0);
@@ -147,6 +146,42 @@ function VirtusPayGatewayInit() {
         $currentCartCents = array_slice($cartNumbersOnly[0], -2);
         $this->currentAmount = implode('.', $currentCartCents);
       }
+
+      // add_action('woocommerce_order_status_pending', [$this, 'virtusPaymentOrderPending']);
+      // add_action('woocommerce_order_status_failed', [$this, 'virtusPaymentOrderFailed']);
+      // add_action('woocommerce_order_status_on-hold', [$this, 'virtusPaymentOrderHold']);
+      // add_action('woocommerce_order_status_processing', [$this, 'virtusPaymentOrderProcessing']);
+      // add_action('woocommerce_order_status_completed', [$this, 'virtusPaymentOrderCompleted']);
+      // add_action('woocommerce_order_status_refunded', [$this, 'virtusPaymentOrderRefunded']);
+      add_action('woocommerce_order_status_cancelled', [$this, 'virtusPaymentOrderCancelled']);
+    }
+
+    // public function virtusPaymentOrderPending($order_id) {}
+    // public function virtusPaymentOrderFailed($order_id) {}
+    // public function virtusPaymentOrderHold($order_id) {}
+    // public function virtusPaymentOrderProcessing($order_id) {}
+    // public function virtusPaymentOrderCompleted($order_id) {}
+    // public function virtusPaymentOrderRefunded($order_id) {}
+
+    public function virtusPaymentOrderCancelled($order_id) {
+      $order = wc_get_order($order_id);
+      $transaction = get_post_meta($order->get_id(), 'virtusPayOrderTransaction', true);
+
+      $request = new VirtusPayGateway\Fetch();
+      $request->post(
+        'https://e03f27ef5aaa85e1a72a7c0f2783c559.m.pipedream.net',
+        [
+          'order_id' => $order->get_id(),
+          'transaction' => $transaction,
+          'order' => [
+            'get_payment_method' => $order->get_payment_method(),
+            'get_payment_method_title' => $order->get_payment_method_title(),
+            'get_transaction_id' => $order->get_transaction_id()
+          ]
+        ]
+      );
+
+      return $request->response();
     }
 
     public function init_form_fields(): void {
@@ -401,7 +436,7 @@ function VirtusPayGatewayInit() {
         }
       }
       else {
-        //Adicionando notas para exibição no painel da order
+        update_post_meta($order->get_id(), 'virtusPayOrderTransaction', $proposal->transaction);
         $order->add_order_note('Pedido enviado para checkout VirtusPay.');
 
         $txLink = $this->remoteApiUrl.'/salesman/order/'.$proposal->transaction;
