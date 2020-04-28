@@ -24,4 +24,31 @@ class Helpers {
 
     return $cpf;
   }
+
+  private function wpOptions(): array {
+    $options = get_option('virtuspayvirtuspay_settings', true);
+    return (array)$options;
+  }
+
+  public function option(string $key): string {
+    $options = $this->wpOptions();
+    if(empty($options)) return '';
+
+    if(!in_array($key, array_keys($options))) return '';
+    return $options[$key];
+  }
+
+  public function isTestMode(): bool {
+    return 'yes' === $this->option('testmode');
+  }
+
+  public function virtusEndpoint(string $path = ''): string {
+    $base = $this->isTestMode() ? virtuspay_TESTURL : virtuspay_PRODURL;
+    return $base.(!empty($path) ? '/'.ltrim($path, '/') : false);
+  }
+
+  public function getToken(): string {
+    $prefix = $this->isTestMode() ? 'test_' : '';
+    return $this->option("${prefix}auth_token");
+  }
 }

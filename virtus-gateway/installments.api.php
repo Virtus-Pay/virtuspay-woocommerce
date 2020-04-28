@@ -1,7 +1,4 @@
 <?php
-require_once __DIR__.'/settings.php';
-require_once __DIR__.'/fetch.class.php';
-
 add_action('rest_api_init', 'VirtusPayGatewayInstallmentsApiRegister');
 function VirtusPayGatewayInstallmentsApiRegister() {
   register_rest_route(virtuspay_VIRTUSPAYMENTID.'/'.virtuspay_VERSION, '/installments', [

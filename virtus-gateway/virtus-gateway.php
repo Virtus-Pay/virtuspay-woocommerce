@@ -54,6 +54,9 @@ function VirtusPayGatewayInit() {
       ['status' => 400]
     );
 
+  // actions para alteração de status de pedidos
+  include_once __DIR__.'/orders-status-actions.php';
+
   class VirtusPayGateway extends WC_Payment_Gateway {
     public $id = virtuspay_VIRTUSPAYMENTID;
     public $plugin_id = virtuspay_VIRTUSPAYMENTID;
@@ -89,15 +92,19 @@ function VirtusPayGatewayInit() {
       $this->init_form_fields();
       $this->init_settings();
 
-      $this->enabled = $this->get_option('enabled');
-      $this->return_url = (strlen($this->get_option('return_url')) > 0)? $this->get_option('return_url') : wc_get_checkout_url();
-      $this->testmode = $this->get_option('testmode');
-      $this->isTestMode = 'yes' === $this->testmode;
-      $this->remoteApiUrl = $this->isTestMode ? virtuspay_TESTURL : virtuspay_PRODURL;
+      $helpers = new VirtusPayGateway\Helpers;
+      $this->enabled = $helpers->option('enabled');
 
-      $this->authTestToken = $this->get_option('test_auth_token');
-      $this->authProdToken = $this->get_option('auth_token');
-      $this->authToken = $this->isTestMode ? $this->authTestToken : $this->authProdToken;
+      $returnURL = $helpers->option('return_url');
+      $this->return_url = !empty($returnURL) ? $returnURL : wc_get_checkout_url();
+
+      $this->testmode = $helpers->option('testmode');
+      $this->isTestMode = $helpers->isTestmode();
+      $this->remoteApiUrl = $helpers->virtusEndpoint();
+
+      $this->authTestToken = $helpers->option('test_auth_token');
+      $this->authProdToken = $helpers->option('auth_token');
+      $this->authToken = $helpers->getToken();
 
       // Begin APIs Endpoints
       add_action(
@@ -138,50 +145,13 @@ function VirtusPayGatewayInit() {
       );
       // End JS Scripts
 
-      global $woocommerce;
-      if(!is_null($woocommerce) and !is_null($woocommerce->cart)) {
-        $currentCartString = $woocommerce->cart->get_cart_total();
+      if(!is_null($this->wc) and !is_null($this->wc->cart)) {
+        $currentCartString = $this->wc->cart->get_cart_total();
 
         preg_match_all('/[0-9]+/', $currentCartString, $cartNumbersOnly);
         $currentCartCents = array_slice($cartNumbersOnly[0], -2);
         $this->currentAmount = implode('.', $currentCartCents);
       }
-
-      // add_action('woocommerce_order_status_pending', [$this, 'virtusPaymentOrderPending']);
-      // add_action('woocommerce_order_status_failed', [$this, 'virtusPaymentOrderFailed']);
-      // add_action('woocommerce_order_status_on-hold', [$this, 'virtusPaymentOrderHold']);
-      // add_action('woocommerce_order_status_processing', [$this, 'virtusPaymentOrderProcessing']);
-      // add_action('woocommerce_order_status_completed', [$this, 'virtusPaymentOrderCompleted']);
-      // add_action('woocommerce_order_status_refunded', [$this, 'virtusPaymentOrderRefunded']);
-      add_action('woocommerce_order_status_cancelled', [$this, 'virtusPaymentOrderCancelled']);
-    }
-
-    // public function virtusPaymentOrderPending($order_id) {}
-    // public function virtusPaymentOrderFailed($order_id) {}
-    // public function virtusPaymentOrderHold($order_id) {}
-    // public function virtusPaymentOrderProcessing($order_id) {}
-    // public function virtusPaymentOrderCompleted($order_id) {}
-    // public function virtusPaymentOrderRefunded($order_id) {}
-
-    public function virtusPaymentOrderCancelled($order_id) {
-      $order = wc_get_order($order_id);
-      $transaction = get_post_meta($order->get_id(), 'virtusPayOrderTransaction', true);
-
-      $request = new VirtusPayGateway\Fetch();
-      $request->post(
-        'https://e03f27ef5aaa85e1a72a7c0f2783c559.m.pipedream.net',
-        [
-          'order_id' => $order->get_id(),
-          'transaction' => $transaction,
-          'order' => [
-            'get_payment_method' => $order->get_payment_method(),
-            'get_payment_method_title' => $order->get_payment_method_title(),
-            'get_transaction_id' => $order->get_transaction_id()
-          ]
-        ]
-      );
-
-      return $request->response();
     }
 
     public function init_form_fields(): void {
