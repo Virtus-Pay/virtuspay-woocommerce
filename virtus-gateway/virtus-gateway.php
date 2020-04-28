@@ -127,20 +127,20 @@ function VirtusPayGatewayInit() {
       // Begin CSS Custom
       wp_enqueue_style(
         'psiCustomStyles',
-        virtuspay_PLUGINURL.'/css/virtus.css'
+        virtuspay_PLUGINURL.'/assets/css/virtus.css'
       );
       // End CSS Custom
 
       // Begin JS Scripts
       wp_enqueue_script(
         'virtus-jquery-mask',
-        virtuspay_PLUGINURL.'/js/jquery.mask.min.js',
+        virtuspay_PLUGINURL.'/assets/js/jquery.mask.min.js',
         ['jquery']
       );
 
       wp_enqueue_script(
         'virtus-library',
-        virtuspay_PLUGINURL.'/js/virtus.js',
+        virtuspay_PLUGINURL.'/assets/js/virtus.js',
         ['virtus-jquery-mask']
       );
       // End JS Scripts
