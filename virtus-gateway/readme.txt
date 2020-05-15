@@ -4,7 +4,7 @@ Tags: woocommerce, gateway, payments, installment billet
 Requires at least: 5.1
 Tested up to: 5.0.8
 Requires PHP: 7.2
-Stable tag: 1.1.3
+Stable tag: 1.1.4
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 

@@ -3,7 +3,7 @@
   * Plugin Name: VirtusPay Boleto Parcelado
   * Plugin URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
   * Description: Pagamentos para o WooCommerce de boletos parcelados através da VirtusPay.
-  * Version: 1.1.3
+  * Version: 1.1.4
   * Author: VirtusPay Dev Team
   * Author URI: https://usevirtus.com.br
   * Privacy Policy: https://www.usevirtus.com.br/privacidade-virtuspay
@@ -268,19 +268,21 @@ function VirtusPayGatewayInit() {
       $orderId = $this->orderEntropyReverse($proposal->order_ref);
       $order = wc_get_order($orderId);
 
-      // E = aprova o pedido
-      if($proposal->status === 'E') {
-        $order->update_status('completed', 'Parcela de entrada paga.');
-      }
-
-      // R e C = cancela o pedido
-      if(in_array($proposal->status, ['R', 'C'])) {
-        $order->update_status('cancelled', 'Proposta cancelada.');
-      }
-
-      // P, N, A = status processando
-      if(in_array($proposal->status, ['P', 'N', 'A'])) {
-        $order->update_status('processing', 'Proposta em processamento.');
+      if($proposal->status && !empty($proposal->status)) {
+        // E = aprova o pedido
+        if($proposal->status === 'E') {
+          $order->update_status('completed', 'Parcela de entrada paga.');
+        }
+  
+        // R e C = cancela o pedido
+        if(in_array($proposal->status, ['R', 'C'])) {
+          $order->update_status('cancelled', 'Proposta cancelada.');
+        }
+  
+        // P, N, A = status processando
+        if(in_array($proposal->status, ['P', 'N', 'A'])) {
+          $order->update_status('processing', 'Proposta em processamento.');
+        }
       }
 
       return $order;

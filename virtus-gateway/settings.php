@@ -1,5 +1,5 @@
 <?php
-define('virtuspay_VERSION', 'v1.1.3');
+define('virtuspay_VERSION', 'v1.1.4');
 define('virtuspay_PLUGINURL', site_url(str_replace(ABSPATH, null, __DIR__)));
 define('virtuspay_ICON', virtuspay_PLUGINURL.'/assets/virtus.png');
 define('virtuspay_TITLE', 'VirtusPay Boleto Parcelado');
