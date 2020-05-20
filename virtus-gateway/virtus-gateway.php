@@ -3,7 +3,7 @@
   * Plugin Name: VirtusPay Boleto Parcelado
   * Plugin URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
   * Description: Pagamentos para o WooCommerce de boletos parcelados através da VirtusPay.
-  * Version: 1.1.4
+  * Version: 1.2.5
   * Author: VirtusPay Dev Team
   * Author URI: https://usevirtus.com.br
   * Privacy Policy: https://www.usevirtus.com.br/privacidade-virtuspay
@@ -127,7 +127,7 @@ function VirtusPayGatewayInit() {
       // Begin CSS Custom
       wp_enqueue_style(
         'psiCustomStyles',
-        virtuspay_PLUGINURL.'/assets/css/virtus.css'
+        virtuspay_PLUGINURL.'/assets/css/virtus.css?virtusPayVersion='.virtuspay_VERSION
       );
       // End CSS Custom
 
@@ -140,7 +140,7 @@ function VirtusPayGatewayInit() {
 
       wp_enqueue_script(
         'virtus-library',
-        virtuspay_PLUGINURL.'/assets/js/virtus.js',
+        virtuspay_PLUGINURL.'/assets/js/virtus.js?virtusPayVersion='.virtuspay_VERSION,
         ['virtus-jquery-mask']
       );
       // End JS Scripts

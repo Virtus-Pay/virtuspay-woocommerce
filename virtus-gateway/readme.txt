@@ -2,15 +2,17 @@
 Contributors: paulosouzainfo
 Tags: woocommerce, gateway, payments, installment billet
 Requires at least: 5.1
-Tested up to: 5.0.8
+Tested up to: 5.4.1
 Requires PHP: 7.2
-Stable tag: 1.1.4
-License: GPLv3 or later
-License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Stable tag: 1.2.5
+License: MIT
+License URI: https://choosealicense.com/licenses/mit
 
 Pagamentos para o WooCommerce de boletos parcelados através da VirtusPay.
 
 == Descrição ==
+
+A VirtusPay possibilita o parcelamento no boleto online, sem precisar de um cartão de crédito!
 
 Aqui temos como objetivo definir os passos de inclusão, configuração e testes para negociações através da VirtusPay, integrando um novo meio de pagamento dentro da sua instalação do Wordpress com o plugin WooCommerce já disponível.
 
@@ -29,7 +31,8 @@ Com o contato comercial, serão disponibilizadas as credenciais de acesso para l
   * Configuração para habilitar/desabilitar o plugin de forma simples sem a necessidade de desativação pelo Wordpress;
   * Configuração para ativação/desativação de testes, mesmo em ambiente de produção da sua loja;
   * Seleção do meio de pagamento VirtusPay no momento do checkout;
-  * Automação de status de propostas para pagamentos abertos, em processamento, recusados ou cancelados e concluídos.
+  * Automação de status de propostas para pagamentos abertos, em processamento, recusados ou cancelados e concluídos;
+  * Cancelamento total e parcial de compras.
 
 Boas vendas!
 
@@ -122,7 +125,19 @@ Este plugin para o WooCommerce permite a configuração e apresentação de um n
 * Exclusão de informação obrigatória de renda
 * Validação de máscaras de CPF e valores em centavos
 
-= 1.0.3 =
+= 1.0.4 =
 * Selectbox para parcelas
 * Remapeamento de nomes de classes, métodos, funções e variáveis
 * Sanitização, escape e validação de dados de entrada
+
+= 1.1.4 =
+* Solução de bugs para seleção de parcelas através da VirtusPay
+* Cancelamento parcial de compras com estorno automático para o cliente
+
+= 1.1.5 =
+* Definição de cache pela URL de JS e CSS 
+
+= 1.2.5 =
+* Ordem reversa para seleção de parcelas
+* Seleção automática de parcelas pelo maior número disponível
+

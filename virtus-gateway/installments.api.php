@@ -1,10 +1,19 @@
 <?php
 add_action('rest_api_init', 'VirtusPayGatewayInstallmentsApiRegister');
 function VirtusPayGatewayInstallmentsApiRegister() {
-  register_rest_route(virtuspay_VIRTUSPAYMENTID.'/'.virtuspay_VERSION, '/installments', [
+  register_rest_route(virtuspay_VIRTUSPAYMENTID, '/version', [
+    'methods' => 'GET',
+    'callback' => 'VirtusPayInstallmentsWpVersionEndpoint',
+  ]);
+
+  register_rest_route(virtuspay_VIRTUSPAYMENTID, '/installments', [
     'methods' => 'POST',
     'callback' => 'VirtusPayInstallmentsWpEndpoint',
   ]);
+}
+
+function VirtusPayInstallmentsWpVersionEndpoint() {
+  return ['version' => virtuspay_VERSION];
 }
 
 function VirtusPayInstallmentsWpEndpoint() {
@@ -47,7 +56,8 @@ function VirtusPayInstallmentsWpEndpoint() {
       );
     }
 
-    $installments = array_map('VirtusPayGatewayInstallmentsNumberFormat', $response->installments);
+    $installmentsFormatNumbers = array_map('VirtusPayGatewayInstallmentsNumberFormat', $response->installments);
+    $installments = array_reverse($installmentsFormatNumbers);
     $response->installments = $installments;
 
     return $response;

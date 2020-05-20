@@ -8,7 +8,7 @@ const v = jQuery.noConflict();
           cpf: v('#billing_cpf').val()
         }
 
-    v.post(`/wp-json/virtuspay/v1.0.3/installments`, data, response => {
+    v.post(`/wp-json/virtuspay/installments`, data, response => {
       let {installments, ...details} = response,
           template;
 
@@ -17,6 +17,7 @@ const v = jQuery.noConflict();
       if(installments.length) {
         v('#billing_installment > option:first-child').toggle();
 
+        let counter = 0;
         for(let item of installments) {
           if(parseInt(item.parcelas) === 1) {
             template = `
@@ -27,7 +28,7 @@ const v = jQuery.noConflict();
           }
           else {
             template = `
-              <option value="${item.parcelas}">
+              <option value="${item.parcelas}"${counter === 0 ? ' selected' : ''}>
                 ${item.parcelas}x
                 (Entrada: R$ ${item.entrada} + R$ ${parseInt(item.parcelas-1)}x R$ ${item.restante})
                 Total: R$ ${item.total}
@@ -36,10 +37,11 @@ const v = jQuery.noConflict();
           }
 
           v('#billing_installment').append(template);
+          counter++;
         }
 
         v('#billing_installment > option').get(0).remove();
-        v('#billing_installment').prepend(`<option selected disabled>Selecione a quantidade de parcelas</option>`);
+        v('#billing_installment').prepend(`<option disabled>Selecione a quantidade de parcelas</option>`);
       }
     });
   };
