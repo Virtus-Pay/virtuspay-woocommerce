@@ -4,7 +4,7 @@ Tags: woocommerce, gateway, payments, installment billet
 Requires at least: 5.1
 Tested up to: 5.4.1
 Requires PHP: 7.2
-Stable tag: 1.2.5
+Stable tag: 1.2.6
 License: MIT
 License URI: https://choosealicense.com/licenses/mit
 
@@ -141,3 +141,6 @@ Este plugin para o WooCommerce permite a configuração e apresentação de um n
 * Ordem reversa para seleção de parcelas
 * Seleção automática de parcelas pelo maior número disponível
 
+
+= 1.2.6 =
+* Ordem reversa para seleção de parcelas
