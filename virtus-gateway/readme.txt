@@ -121,26 +121,28 @@ Este plugin para o WooCommerce permite a configuração e apresentação de um n
 
 == Changelog ==
 
-= 1.0.3 =
-* Exclusão de informação obrigatória de renda
-* Validação de máscaras de CPF e valores em centavos
+= 1.2.7 =
+* Tratamento de retorno nulo convertido para string ao recuperar as opções de configurações
+
+= 1.2.6 =
+* Ordem reversa para seleção de parcelas
+
+= 1.2.5 =
+* Ordem reversa para seleção de parcelas
+* Seleção automática de parcelas pelo maior número disponível
+
+= 1.1.5 =
+* Definição de cache pela URL de JS e CSS 
+
+= 1.1.4 =
+* Solução de bugs para seleção de parcelas através da VirtusPay
+* Cancelamento parcial de compras com estorno automático para o cliente
 
 = 1.0.4 =
 * Selectbox para parcelas
 * Remapeamento de nomes de classes, métodos, funções e variáveis
 * Sanitização, escape e validação de dados de entrada
 
-= 1.1.4 =
-* Solução de bugs para seleção de parcelas através da VirtusPay
-* Cancelamento parcial de compras com estorno automático para o cliente
-
-= 1.1.5 =
-* Definição de cache pela URL de JS e CSS 
-
-= 1.2.5 =
-* Ordem reversa para seleção de parcelas
-* Seleção automática de parcelas pelo maior número disponível
-
-
-= 1.2.6 =
-* Ordem reversa para seleção de parcelas
+= 1.0.3 =
+* Exclusão de informação obrigatória de renda
+* Validação de máscaras de CPF e valores em centavos

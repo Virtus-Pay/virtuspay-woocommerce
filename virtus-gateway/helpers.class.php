@@ -35,7 +35,7 @@ class Helpers {
     if(empty($options)) return '';
 
     if(!in_array($key, array_keys($options))) return '';
-    return $options[$key];
+    return !is_null($options[$key]) ? $options[$key] : '';
   }
 
   public function isTestMode(): bool {
