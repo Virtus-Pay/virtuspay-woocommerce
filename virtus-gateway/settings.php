@@ -1,6 +1,6 @@
 <?php
-define('virtuspay_VERSION', 'v1.2.7');
-define('virtuspay_PLUGINURL', site_url(str_replace(ABSPATH, null, __DIR__)));
+define('virtuspay_VERSION', 'v1.2.8');
+define('virtuspay_PLUGINURL', site_url('/wp-content/plugins/virtuspay-boleto-parcelado');
 define('virtuspay_ICON', virtuspay_PLUGINURL.'/assets/virtus.png');
 define('virtuspay_TITLE', 'VirtusPay Boleto Parcelado');
 define('virtuspay_DESCRIPTION', 'Pagamento parcelado no boleto com a VirtusPay');
