@@ -4,7 +4,7 @@ Tags: woocommerce, gateway, payments, installment billet
 Requires at least: 5.1
 Tested up to: 5.4.1
 Requires PHP: 7.2
-Stable tag: 1.2.8
+Stable tag: 1.2.10
 License: MIT
 License URI: https://choosealicense.com/licenses/mit
 
@@ -37,14 +37,6 @@ Com o contato comercial, serão disponibilizadas as credenciais de acesso para l
 Boas vendas!
 
 == Instalação ==
-
-*Download e Descompactação*
-
-Faça o download o arquivo zip que foi disponibilizado com o envio das suas credenciais de acesso e descompacte o arquivo /wp-contents/plugins caso você não tenha iniciado o processo de instalação diretamente pelo diretório de plugins do Wordpress.
-
-Após a descompactação do arquivo, uma nova pasta será criada com o nome virtus-gateway, permitindo assim a sua visualização no seu diretório de plugins do seu painel administrativo, conforme a imagem abaixo.
-
-![Plugin Desativado](https://ipfs.io/ipfs/Qmf4aBtBxJEYmomY9rsEGyvRjPJJTvE6oJF5nnLWqYKfzb?filename=Captura%20de%20tela%20de%202020-04-22%2011-09-06.png)
 
 *Ativação*
 
@@ -120,6 +112,12 @@ Autenticação de acesso para a API de dados em ambiente de produção / publica
 Este plugin para o WooCommerce permite a configuração e apresentação de um novo meio de pagamento para ser escolhido no momento do checkout e usa integrações externas para validação de dados e processamento de pedidos através de uma API sobre a responsabilidade da VirtusPay.
 
 == Changelog ==
+
+= 1.2.10 =
+* Retirada as instruções de instalação através de arquivos .zip
+
+= 1.2.9 =
+* Path para o nome da pasta do plugin
 
 = 1.2.8 =
 * Definição de caminho absoluto do plugin no WP
