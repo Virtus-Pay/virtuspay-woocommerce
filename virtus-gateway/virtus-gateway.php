@@ -219,7 +219,7 @@ function VirtusPayGatewayInit() {
         echo wpautop($this->description);
       }
 
-      $response = '<div class="form-group">
+      $response = '<div class="form-group" id="virtusSelectFallbackProcess">
           <select
             class="form-control"
             name="billing_installment"
@@ -411,7 +411,7 @@ function VirtusPayGatewayInit() {
         update_post_meta($order->get_id(), 'virtusPayOrderTransaction', $proposal->transaction);
         $order->add_order_note('Pedido enviado para checkout VirtusPay.');
 
-        $txLink = $this->remoteApiUrl.'/salesman/order/'.$proposal->transaction;
+        $txLink = str_replace('/api', '', $this->remoteApiUrl.'/salesman/order/'.$proposal->transaction);
         $order->add_order_note('Proposta disponível para consulta em: <a target="_blank" href='.$txLink.'>'.$txLink.'</a>');
 
         $this->wc->cart->empty_cart();

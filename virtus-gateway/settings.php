@@ -1,5 +1,5 @@
 <?php
-define('virtuspay_VERSION', 'v1.2.10');
+define('virtuspay_VERSION', 'v1.2.11');
 define('virtuspay_PLUGINURL', site_url('/wp-content/plugins/virtus-gateway'));
 define('virtuspay_ICON', virtuspay_PLUGINURL.'/assets/virtus.png');
 define('virtuspay_TITLE', 'VirtusPay Boleto Parcelado');
