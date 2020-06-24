@@ -1,0 +1,11 @@
+#billing_installment {
+  font-family: arial, helvetica, sans-serif;
+  font-size: 90%;
+  max-width: 100%;
+}
+
+#interestAndCet {
+  font-family: arial, helvetica, sans-serif;
+  font-style: italic;
+  font-size: 65%;
+}
