@@ -1,5 +1,5 @@
 <?php
-define('virtuspay_VERSION', 'v1.2.13');
+define('virtuspay_VERSION', 'v1.2.14');
 define('virtuspay_PLUGINURL', site_url('/wp-content/plugins/virtuspay-boleto-parcelado'));
 define('virtuspay_ICON', virtuspay_PLUGINURL.'/assets/virtus.png');
 define('virtuspay_TITLE', 'Boleto Parcelado');

@@ -3,7 +3,7 @@
   * Plugin Name: VirtusPay Boleto Parcelado
   * Plugin URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
   * Description: Pagamentos para o WooCommerce de boletos parcelados através da VirtusPay.
-  * Version: 1.2.13
+  * Version: 1.2.14
   * Author: VirtusPay Dev Team
   * Author URI: https://usevirtus.com.br
   * Privacy Policy: https://www.usevirtus.com.br/privacidade-virtuspay
@@ -269,23 +269,37 @@ function VirtusPayGatewayInit() {
       $order = wc_get_order($orderId);
 
       if($proposal->status && !empty($proposal->status)) {
-        // E = aprova o pedido
-        if($proposal->status === 'E') {
-          $order->update_status('completed', 'Parcela de entrada paga.');
+        switch ($proposal->status) {
+          case 'C':
+            $wcStatus = 'failed';
+            $virtusPayMessage = 'Pedido cancelado';
+            break;
+          case 'R':
+            $wcStatus = 'cancelled'; 
+            $virtusPayMessage = 'Pedido recusado';
+            break;
+          case 'N':
+            $wcStatus = 'pending'; 
+            $virtusPayMessage = 'Pedido analisado e aguardando aprovação';
+            break;
+          case 'A':
+            $wcStatus = 'pending'; 
+            $virtusPayMessage = 'Pedido aprovado e aguardando pagamento';
+            break;
+          case 'P':
+            $wcStatus = 'on-hold';
+            $virtusPayMessage = 'Pagamento pendente';
+            break;
+          case 'E':
+            $wcStatus = 'processing';
+            $virtusPayMessage = 'Pago e em processamento';
+            break;
         }
-  
-        // R e C = cancela o pedido
-        if(in_array($proposal->status, ['R', 'C'])) {
-          $order->update_status('cancelled', 'Proposta cancelada.');
-        }
-  
-        // P, N, A = status processando
-        if(in_array($proposal->status, ['P', 'N', 'A'])) {
-          $order->update_status('processing', 'Proposta em processamento.');
-        }
+        
+        $order->update_status($wcStatus, $virtusPayMessage);
       }
 
-      return $order;
+      return json_encode($order);
     }
 
     private function getProductCategoriesByIDs(array $data): string {
