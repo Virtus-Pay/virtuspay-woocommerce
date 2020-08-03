@@ -4,9 +4,9 @@ const v = jQuery.noConflict();
     v('#billing_installment').html(`<option selected disabled>Carregando...</option>`);
 
     let data = {
-          total_amount: v('#billing_installment').data('amount'),
-          cpf: v('#billing_cpf').val()
-        }
+      total_amount: v('#billing_installment').data('amount'),
+      cpf: v('#billing_cpf').val()
+    };
     
     try {
       v.post(`/wp-json/virtuspay/installments`, data, response => {
