@@ -4,7 +4,7 @@ Tags: woocommerce, gateway, payments, installment billet
 Requires at least: 5.1
 Tested up to: 5.4.1
 Requires PHP: 7.2
-Stable tag: 2.0.0
+Stable tag: 1.3.14
 License: MIT
 License URI: https://choosealicense.com/licenses/mit
 
@@ -112,9 +112,6 @@ Autenticação de acesso para a API de dados em ambiente de produção / publica
 Este plugin para o WooCommerce permite a configuração e apresentação de um novo meio de pagamento para ser escolhido no momento do checkout e usa integrações externas para validação de dados e processamento de pedidos através de uma API sobre a responsabilidade da VirtusPay.
 
 == Changelog ==
-
-= 2.0.0 =
-* Refactoring com remoção de tipagens dinâmicas para compatibilidade em múltiplas versões do PHP
 
 = 1.3.14 =
 * Recupera o valor do carrinho não parseado pelo WC

@@ -1,13 +1,15 @@
 <?php
 namespace VirtusPayGateway;
 class Helpers {
-  public static function debug(array $data, bool $die = false): void {
+  //void
+  public static function debug($data, $die = false) {
     $template = '<pre>'.print_r($data, true).'</pre>';
     if($die) die($template);
     echo $template.PHP_EOL;
   }
 
-  public static function cpf(string $cpf): string {
+  //string
+  public static function cpf($cpf) {
     $cpf = preg_replace('/[^0-9]/is', '', $cpf);
 
     if(strlen($cpf) != 11) return '';
@@ -25,12 +27,14 @@ class Helpers {
     return $cpf;
   }
 
-  private function wpOptions(): array {
+  //array
+  private function wpOptions() {
     $options = get_option('virtuspayvirtuspay_settings', true);
     return (array)$options;
   }
 
-  public function option(string $key): string {
+  //string
+  public function option($key) {
     $options = $this->wpOptions();
     if(empty($options)) return '';
 
@@ -38,16 +42,19 @@ class Helpers {
     return !is_null($options[$key]) ? $options[$key] : '';
   }
 
-  public function isTestMode(): bool {
+  //bool
+  public function isTestMode() {
     return 'yes' === $this->option('testmode');
   }
 
-  public function virtusEndpoint(string $path = ''): string {
+  //string
+  public function virtusEndpoint($path = '') {
     $base = $this->isTestMode() ? virtuspay_TESTURL : virtuspay_PRODURL;
     return $base.(!empty($path) ? '/'.ltrim($path, '/') : false);
   }
 
-  public function getToken(): string {
+  //string
+  public function getToken() {
     $prefix = $this->isTestMode() ? 'test_' : '';
     return $this->option("${prefix}auth_token");
   }

@@ -4,13 +4,12 @@ class Fetch {
   private $sentHeaders = [];
   private $response;
 
-  public function __construct($token = '') {
+  public function __construct(string $token = '') {
     $this->sentHeaders['Content-Type'] = 'application/json';
     if(strlen($token)) $this->sentHeaders['Authorization'] = 'Token '.$token;
   }
 
-  //void
-  public function get($url) {
+  public function get(string $url): void {
     $request = wp_remote_get($url, [
       'headers' => $this->sentHeaders
     ]);
@@ -21,8 +20,7 @@ class Fetch {
     else $this->response = $request['body'];
   }
 
-  //void
-  public function post($url, $data) {
+  public function post(string $url, array $data): void {
     $payload = json_encode($data);
     $this->sentHeaders['Content-Length'] = strlen((string)$payload);
     $request = wp_remote_post($url, [

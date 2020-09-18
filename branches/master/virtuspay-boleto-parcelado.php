@@ -3,7 +3,7 @@
   * Plugin Name: VirtusPay Boleto Parcelado
   * Plugin URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
   * Description: Pagamentos para o WooCommerce de boletos parcelados através da VirtusPay.
-  * Version: 1.3.14
+  * Version: 2.0.0
   * Author: VirtusPay Dev Team
   * Author URI: https://usevirtus.com.br
   * Privacy Policy: https://www.usevirtus.com.br/privacidade-virtuspay
@@ -18,13 +18,15 @@ require_once __DIR__.'/installments.api.php';
 add_action('plugins_loaded', 'VirtusPayGatewayInit', 0);
 function VirtusPayGatewayInit() {
   add_filter('woocommerce_payment_gateways', 'VirtusPayGatewayAddPaymentMethod');
-  function VirtusPayGatewayAddPaymentMethod(array $paymentMethods): array {
+  //array
+  function VirtusPayGatewayAddPaymentMethod($paymentMethods) {
     array_push($paymentMethods, 'VirtusPayGateway');
     return $paymentMethods;
   }
 
   add_filter('plugin_action_links_virtuspay-boleto-parcelado/virtuspay-boleto-parcelado.php', 'VirtusPayGatewayAddConfigInPluginList');
-  function VirtusPayGatewayAddConfigInPluginList(array $links): array {
+  //array
+  function VirtusPayGatewayAddConfigInPluginList($links) {
     $url = esc_url( add_query_arg(
       'page',
       'wc-settings&tab=checkout&section=virtuspay',
@@ -42,17 +44,19 @@ function VirtusPayGatewayInit() {
   }
 
   add_filter('woocommerce_payment_gateways', 'VirtusPayGatewayAddGatewayNameForWooCommerce');
-	function VirtusPayGatewayAddGatewayNameForWooCommerce(array $methods): array {
+  //array
+	function VirtusPayGatewayAddGatewayNameForWooCommerce($methods) {
 		array_push($methods, virtuspay_TITLE);
 		return $methods;
 	}
 
-  if(!class_exists('WC_Payment_Gateway'))
+  if(!class_exists('WC_Payment_Gateway')) {
     return new WP_Error(
       'virtus_payment_gateway_undefined',
       'É necessária a instalação do Woocommerce',
       ['status' => 400]
-    );
+    ); 
+  }
 
   // actions para alteração de status de pedidos
   include_once __DIR__.'/orders-status-actions.php';
@@ -149,7 +153,8 @@ function VirtusPayGatewayInit() {
         $this->currentAmount = $this->wc->cart->total;
     }
 
-    public function init_form_fields(): void {
+    //void
+    public function init_form_fields() {
       $this->form_fields = [
         'enabled' => [
           'title' => 'Ativação',
@@ -203,7 +208,8 @@ function VirtusPayGatewayInit() {
       ];
     }
 
-    public function payment_fields(): void {
+    //void
+    public function payment_fields() {
       if($this->description) {
         if ($this->isTestMode) {
           $this->description = '
@@ -228,11 +234,13 @@ function VirtusPayGatewayInit() {
       echo $response;
     }
 
-    private function orderEntropyConcat(string $orderID): string {
+    //string
+    private function orderEntropyConcat($orderID) {
       return $orderID.'.'.time();
     }
 
-    private function orderEntropyReverse(string $entropy): string {
+    //string
+    private function orderEntropyReverse($entropy) {
       return strstr($entropy, '.', true);
     }
 
@@ -297,7 +305,8 @@ function VirtusPayGatewayInit() {
       return json_encode($order);
     }
 
-    private function getProductCategoriesByIDs(array $data): string {
+    //string
+    private function getProductCategoriesByIDs($data) {
       $categories = [];
 
       foreach($data as $id) {
@@ -376,7 +385,7 @@ function VirtusPayGatewayInit() {
 
       //Montando array com os dados da requisição
       $data = [
-        "order_ref" => $this->orderEntropyConcat((string)$orderId),
+        "order_ref" => $this->orderEntropyConcat($orderId),
         "customer" => $customer,
         "delivery_address" => $shipping_address,
         "total_amount" => $amount,
@@ -434,7 +443,8 @@ function VirtusPayGatewayInit() {
       }
     }
 
-    function custom_woocommerce_billing_fields(array $fields): array {
+    //array
+    function custom_woocommerce_billing_fields($fields) {
 			$customer = WC()->session->get('customer');
       $data = WC()->session->get('custom_data');
 
