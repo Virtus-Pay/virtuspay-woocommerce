@@ -1,5 +1,5 @@
 const v = jQuery.noConflict();
-;(() => {
+const setupVPScripts = ()=> (() => {
   const getInstallments = () => {
     v('#billing_installment').html(`<option selected disabled>Carregando...</option>`);
 
@@ -44,7 +44,7 @@ const v = jQuery.noConflict();
           v('#billing_installment > option').get(0).remove();
           v('#billing_installment').prepend(`<option disabled>Selecione a quantidade de parcelas</option>`);
         }
-      });
+      });      
     }
     catch(e) {
       console.log(e);
@@ -94,6 +94,19 @@ const v = jQuery.noConflict();
           }
         });
       }
-    });
+    });    
   });
-})()
+})();
+
+v(document).ready(()=>{
+  //updated_checkout = evento personalizado
+  v(document.body).on('updated_checkout',()=>{
+    setupVPScripts();
+  });
+});
+
+
+
+
+
+
