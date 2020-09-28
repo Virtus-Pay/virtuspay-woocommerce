@@ -232,6 +232,10 @@ function VirtusPayGatewayInit() {
         </div>
 
         <p style='font-size:14px;margin-top:10px'>
+          Credito aprovado? Que bom =) Pague a primeira parcela para liberar seu pedido aqui na loja.'
+        </p>
+
+        <p style='font-size:14px;margin-top:10px'>
           Para clientes sem restrições em seu nome  e CPF <br>
           Para maiores de 18 anos <br>
           *Sujeito a análise de crédito <br>
