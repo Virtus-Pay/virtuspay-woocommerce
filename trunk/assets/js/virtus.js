@@ -99,7 +99,9 @@ const setupVPScripts = ()=> (() => {
 })();
 
 v(document).ready(()=>{
-  //updated_checkout = evento personalizado
+  const paymentAbled = v('#payment');
+  const url = window.location.href.replace('//','/').split('/');
+  if(paymentAbled.length >0 && url.length > 4) setupVPScripts();
   v(document.body).on('updated_checkout',()=>{
     setupVPScripts();
   });
