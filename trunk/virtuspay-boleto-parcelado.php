@@ -404,6 +404,7 @@ function VirtusPayGatewayInit() {
       $costumerEmail = $order->get_billing_email();
       $costumerPhone = !empty($billing_cellphone) ? $billing_cellphone : $billing_phone;
       $birthdate = !empty($billing_birthdate) ? $billing_birthdate : '01-01-1900';
+      $checkoutUrl =  $order->get_checkout_payment_url();
 
       $customer = [
         "full_name" => $costumerName,
@@ -412,7 +413,8 @@ function VirtusPayGatewayInit() {
         "cellphone" => $costumerPhone,
         "email" => $costumerEmail,
         "birthdate" => date('Y-m-d', strtotime(str_replace('/', '-', $birthdate))),
-        "customer_address" => $billing_address
+        "customer_address" => $billing_address,
+        "return_checkout_url" => $checkoutUrl
       ];
 
       //Montando array com os dados da requisição
