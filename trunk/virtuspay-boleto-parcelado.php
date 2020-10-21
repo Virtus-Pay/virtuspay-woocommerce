@@ -413,8 +413,7 @@ function VirtusPayGatewayInit() {
         "cellphone" => $costumerPhone,
         "email" => $costumerEmail,
         "birthdate" => date('Y-m-d', strtotime(str_replace('/', '-', $birthdate))),
-        "customer_address" => $billing_address,
-        "return_checkout_url" => $checkoutUrl
+        "customer_address" => $billing_address        
       ];
 
       //Montando array com os dados da requisição
@@ -428,7 +427,8 @@ function VirtusPayGatewayInit() {
         "callback" => $callback,
         "return_url" => $this->return_url,
         "channel" => "woocommerce",
-        "items" => $items
+        "items" => $items,
+        "return_checkout_url" => $checkoutUrl
       ];
 
       $virtusProposal = new VirtusPayGateway\Fetch($this->authToken);
