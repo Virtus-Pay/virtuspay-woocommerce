@@ -1,10 +1,15 @@
 const v = jQuery.noConflict();
-;(() => {
+const setupVPScripts = ()=> (() => {
   const getInstallments = () => {
     v('#billing_installment').html(`<option selected disabled>Carregando...</option>`);
 
+    let orderPayAmount = v('#order_review .product-total .woocommerce-Price-amount bdi')[v('#order_review .product-total .woocommerce-Price-amount bdi').length-1];
+    orderPayAmount = orderPayAmount.innerText.replace('R$','');
+    let checkoutAmount = v('#billing_installment').data('amount');
+    let totalAmount = checkoutAmount != 0 ? checkoutAmount : parseFloat(orderPayAmount);
+
     let data = {
-      total_amount: v('#billing_installment').data('amount'),
+      total_amount: totalAmount,
       cpf: v('#billing_cpf').val()
     };
     
@@ -44,7 +49,7 @@ const v = jQuery.noConflict();
           v('#billing_installment > option').get(0).remove();
           v('#billing_installment').prepend(`<option disabled>Selecione a quantidade de parcelas</option>`);
         }
-      });
+      });      
     }
     catch(e) {
       console.log(e);
@@ -94,6 +99,21 @@ const v = jQuery.noConflict();
           }
         });
       }
-    });
+    });    
   });
-})()
+})();
+
+v(document).ready(()=>{
+  const paymentAbled = v('#payment');
+  const url = window.location.href.replace('//','/').split('/');
+  if(paymentAbled.length >0 && url.length > 4) setupVPScripts();
+  v(document.body).on('updated_checkout',()=>{
+    setupVPScripts();
+  });
+});
+
+
+
+
+
+

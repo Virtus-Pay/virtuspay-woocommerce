@@ -3,7 +3,7 @@
   * Plugin Name: VirtusPay Boleto Parcelado
   * Plugin URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
   * Description: Pagamentos para o WooCommerce de boletos parcelados através da VirtusPay.
-  * Version: 2.1.0
+  * Version: 2.1.1
   * Author: VirtusPay Dev Team
   * Author URI: https://usevirtus.com.br
   * Privacy Policy: https://www.usevirtus.com.br/privacidade-virtuspay
@@ -404,6 +404,7 @@ function VirtusPayGatewayInit() {
       $costumerEmail = $order->get_billing_email();
       $costumerPhone = !empty($billing_cellphone) ? $billing_cellphone : $billing_phone;
       $birthdate = !empty($billing_birthdate) ? $billing_birthdate : '01-01-1900';
+      $checkoutUrl =  $order->get_checkout_payment_url();
 
       $customer = [
         "full_name" => $costumerName,
@@ -412,7 +413,7 @@ function VirtusPayGatewayInit() {
         "cellphone" => $costumerPhone,
         "email" => $costumerEmail,
         "birthdate" => date('Y-m-d', strtotime(str_replace('/', '-', $birthdate))),
-        "customer_address" => $billing_address
+        "customer_address" => $billing_address        
       ];
 
       //Montando array com os dados da requisição
@@ -426,7 +427,8 @@ function VirtusPayGatewayInit() {
         "callback" => $callback,
         "return_url" => $this->return_url,
         "channel" => "woocommerce",
-        "items" => $items
+        "items" => $items,
+        "return_checkout_url" => $checkoutUrl
       ];
 
       $virtusProposal = new VirtusPayGateway\Fetch($this->authToken);
