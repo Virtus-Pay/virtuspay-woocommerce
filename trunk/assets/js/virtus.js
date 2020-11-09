@@ -18,7 +18,9 @@ const setupVPScripts = ()=> (() => {
         let {installments, ...details} = response,
             template;
 
-        v('#interestAndCet').html(`Juros de ${details.interest} a.m. CET máximo de ${details.cet}`);
+        v('#interestAndCet').html(`Juros de ${details.interest} a.m. CET máximo de ${details.cet} <br> <p>Dúvidas? clique <a target='_blank' style='color: #5ce1e6;font-weight:bold' href='https://boletopop.usevirtus.com.br/duvidas-frequentes'>aqui</a> <br>
+        ou fale com a gente em <a target='__blank' style='color: #5ce1e6;font-weight:bold' href='mailto:atendimento@virtuspay.com.br'>atendimento@virtuspay.com.br</a> <br>
+        ou no <a target='___blank' style='color: #5ce1e6;font-weight:bold' href='https://api.whatsapp.com/send?phone=5511992193161&text=Para%20facilitar%20seu%20contato%20conosco,%20envie%20essa%20mensagem%20e%20nos%20adicione%20em%20seus%20contatos.%20Obrigado!%20Equipe%20VirtusPay&source=&data=#.'>Whatsapp</a> </p>`);
 
         if(installments.length) {
           v('#billing_installment > option:first-child').toggle();
@@ -36,7 +38,7 @@ const setupVPScripts = ()=> (() => {
               template = `
                 <option value="${item.parcelas}"${counter === 0 ? ' selected' : ''}>
                   ${item.parcelas}x
-                  (Entrada: R$ ${item.entrada} + R$ ${parseInt(item.parcelas-1)}x R$ ${item.restante})
+                  (1x R$ ${item.entrada} + R$ ${parseInt(item.parcelas-1)}x R$ ${item.restante}) |
                   Total: R$ ${item.total}
                 </option>
                 `;
