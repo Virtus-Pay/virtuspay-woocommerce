@@ -3,7 +3,7 @@
   * Plugin Name: VirtusPay Boleto Parcelado
   * Plugin URI: https://documenter.getpostman.com/view/215460/SVSPnmLs?version=latest
   * Description: Pagamentos para o WooCommerce de boletos parcelados através da VirtusPay.
-  * Version: 2.1.1
+  * Version: 2.1.2
   * Author: VirtusPay Dev Team
   * Author URI: https://usevirtus.com.br
   * Privacy Policy: https://www.usevirtus.com.br/privacidade-virtuspay
@@ -211,42 +211,12 @@ function VirtusPayGatewayInit() {
     //void
     public function payment_fields() {
       if($this->description) {
-        $this->description = "
-        <b style='background-color: #00ffff;color:black;list-style-type:decimal;font-size:15px'>O Boleto Parcelado Online</b>
-        <p style='font-size:14px;margin-top:10px'>
-          Sem cartão de crédito, sem complicação!
-          Em até <b>15x</b>, com taxas a partir de 3,90%
-        </p>
-
-        <b style='background-color: #00ffff;color:black;list-style-type:decimal;font-size:15px'>Parcele sua compra de forma simples e rápida:</b>
-        <p style='font-size:14px;margin-top:10px'>
-          <b style='background-color: #00ffff'>1.</b> Escolha em quantas vezes deseja parcelar e finalize sua compra. <br>
-          <b style='background-color: #00ffff'>2.</b> Já saiba na hora se sua proposta foi pré-aprovada!
-        </p>
-
-        <div style='width:100%;padding:10px;background-color:#fff2ccff;font-size:14px;margin-top:10px'>
-          <p>
-            <b style='color:black'>Fique atento ao seu e-mail e Whatsapp ! </b> <br>
-            A VirtusPay irá pedir a validação de seus dados por esses canais para a finalização do seu pedido.
-          </p>
-        </div>
-
-        <p style='font-size:14px;margin-top:10px'>
-          Credito aprovado? Que bom =) Pague a primeira parcela para liberar seu pedido aqui na loja.'
-        </p>
-
-        <p style='font-size:14px;margin-top:10px'>
-          Para clientes sem restrições em seu nome  e CPF <br>
-          Para maiores de 18 anos <br>
-          *Sujeito a análise de crédito <br>
-          Dúvidas? Conheça nosso <a style='color: #3d9cd2' target='__blank' href='https://virtuspay.com.br'>site</a> ou fale a gente <a style='color: #3d9cd2' target='__blank' href='mailto:atendimento@virtuspay.com.br'>atendimento@virtuspay.com.br</a>
-        </p>
-        <br>
-        ";
+        $this->description = "<img src='https://i.ibb.co/vdF4c8T/Woo-Checkout-VP-Boleto-Parcelado-1.png' style='width:100%'>";        
         if ($this->isTestMode) {
-          $this->description = '
-            <b>!!! '.$this->title.' EM MODO DE TESTES !!!</b>
-          ';
+          $this->description = "<b>Modo de testes!!!!</b>
+          <br>
+          <img src='https://i.ibb.co/vdF4c8T/Woo-Checkout-VP-Boleto-Parcelado-1.png' style='width:100%'>
+          ";
         }
 
         echo wpautop($this->description);

@@ -113,10 +113,12 @@ Este plugin para o WooCommerce permite a configuração e apresentação de um n
 
 == Changelog ==
 
+= 2.1.2 =
+* Atualização do checkout
+
 = 2.1.1 =
 * Requisição direta para a API na tela de pagamento do pedido
 * Campo de retorno para desistência no nosso checkout para criação da proposta
-
 
 = 2.1.0 =
 * Comunicação e transparência com o cliente
