@@ -4,7 +4,7 @@ const setupVPScripts = ()=> (() => {
     v('#billing_installment').html(`<option selected disabled>Carregando...</option>`);
 
     let orderPayAmount = v('#order_review .product-total .woocommerce-Price-amount bdi')[v('#order_review .product-total .woocommerce-Price-amount bdi').length-1];
-    orderPayAmount = orderPayAmount.innerText.replace('R$','');
+    orderPayAmount = orderPayAmount?.innerText?.replace('R$','');
     let checkoutAmount = v('#billing_installment').data('amount');
     let totalAmount = checkoutAmount != 0 ? checkoutAmount : parseFloat(orderPayAmount);
 
